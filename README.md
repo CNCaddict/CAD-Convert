@@ -91,8 +91,12 @@ The biggest gaps left are FreeCAD's fillets (it refuses some rounds Inventor mak
 
 ## Quick start
 
-Requirements: Windows, and [FreeCAD 1.1.4](https://www.freecad.org) (the portable build). Building needs nothing more:
-the C# compiler comes with Windows (.NET Framework 4).
+**To try it:** download `CAD-Convert-0.1.0-windows.zip` from the
+[latest release](https://github.com/CNCaddict/CAD-Convert/releases/latest), unzip it anywhere and run
+`CadConvert.exe`. Nothing to install: a trimmed FreeCAD is inside, and Inventor isn't needed.
+
+**To build it:** Windows, and [FreeCAD 1.1.4](https://www.freecad.org) (the portable build). Building needs nothing
+more: the C# compiler comes with Windows (.NET Framework 4).
 
 ```bash
 tools\build.cmd
