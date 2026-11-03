@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\sketch-constraint\\parallel.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 9, "dimensions": 0, "constraints": 7}
+  ]
+}

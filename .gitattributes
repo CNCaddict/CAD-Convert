@@ -1,0 +1,14 @@
+# Text files are stored with LF and checked out as Windows wants them.
+* text=auto
+
+# Inventor's files are binary: never touch their bytes.
+*.ipt binary
+*.iam binary
+*.idw binary
+*.dwg binary
+*.step binary
+*.stp binary
+
+# Windows scripts keep CRLF, which cmd.exe needs.
+*.cmd text eol=crlf
+*.bat text eol=crlf

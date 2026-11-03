@@ -1,0 +1,16 @@
+{
+  "file": "corpus\\generated\\unit\\inch-doc.ipt",
+  "parameters": [
+    {"name": "Len", "expression": "2 in", "value": 5.08, "units": "in", "kind": "kUserParameterObject"},
+    {"name": "Ang", "expression": "30 deg", "value": 0.52359877559829882, "units": "deg", "kind": "kUserParameterObject"},
+    {"name": "d0", "expression": "0.5 in", "value": 1.27, "units": "in", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "Len", "value": 5.08, "units": "in", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 1, "constraints": 1}
+  ]
+}

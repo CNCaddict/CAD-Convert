@@ -1,0 +1,22 @@
+{
+  "file": "corpus\\generated\\gaps\\end-of-part.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "1 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "10 mm", "taper": "0 deg", "profile": "+line (-20, -20) (-20, 20), line (-20, -20) (20, -20), line (-20, 20) (20, 20), line (20, -20) (20, 20)", "health": "kUpToDateHealth"},
+    {"name": "Extrusion2", "type": "kExtrudeFeatureObject", "operation": "kCutOperation", "extent": "kThroughAllExtent", "direction": "kSymmetricExtentDirection", "taper": "0 deg", "profile": "+circle (0, 0) 5", "health": "kUpToDateHealth"},
+    {"name": "Fillet1", "type": "kFilletFeatureObject", "filletType": "kEdgeFillet", "automaticEdgeChain": "true", "smoothRadiusTransition": "false", "rollAlongSharpEdges": "false", "rollingBallWherePossible": "true", "preserveAllFeatures": "false", "sets": "1", "radius1": "1 mm", "radius1Param": "d4", "edges1": "1", "allFillets1": "false", "allRounds1": "false", "health": "kBeyondStopNodeHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["edge circle (0, 0, 5) 5"]
+}

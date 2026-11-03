@@ -1,0 +1,15 @@
+{
+  "file": "corpus\\generated\\shell\\no-face.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "20 mm", "value": 2, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "2 mm", "value": 0.2, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "20 mm", "taper": "0 deg", "profile": "+line (-20, -20) (-20, 20), line (-20, -20) (20, -20), line (-20, 20) (20, 20), line (20, -20) (20, 20)", "health": "kUpToDateHealth"},
+    {"name": "Shell1", "type": "kShellFeatureObject", "direction": "kInsideShellDirection", "thickness": "2 mm", "thicknessParam": "d2", "removedFaces": "0", "faceSets": "0", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12}
+  ]
+}

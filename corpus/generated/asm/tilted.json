@@ -1,0 +1,15 @@
+{
+  "file": "corpus\\generated\\asm\\tilted.iam",
+  "parameters": [
+    
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "0.781639 -0.482929 0.39474 1 0.550117 0.83203 -0.071392 2 -0.293958 0.272956 0.916015 3", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    
+  ],
+  "joints": [
+    
+  ]
+}

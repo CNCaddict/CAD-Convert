@@ -1,0 +1,15 @@
+{
+  "file": "corpus\\generated\\asm\\named.iam",
+  "parameters": [
+    
+  ],
+  "occurrences": [
+    {"name": "My Box", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    
+  ],
+  "joints": [
+    
+  ]
+}

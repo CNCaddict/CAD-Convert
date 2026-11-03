@@ -1,0 +1,17 @@
+{
+  "file": "corpus\\generated\\chamfer\\two-distances.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "1 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "2 mm", "value": 0.2, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "10 mm", "taper": "0 deg", "health": "kUpToDateHealth"},
+    {"name": "Chamfer1", "type": "kChamferFeatureObject", "chamferType": "kTwoDistances", "distanceOne": "1 mm", "distanceOneParam": "d2", "distanceTwo": "2 mm", "distanceTwoParam": "d3", "face": "true", "automaticEdgeChain": "true", "cornerSetback": "false", "preserveAllFeatures": "false", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12}
+  ],
+  "picked": ["edge line (-10, -10, 5) (10, -10, 5)", "face plane (0, 0, 1) 5"]
+}

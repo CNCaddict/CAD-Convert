@@ -1,0 +1,19 @@
+{
+  "file": "corpus\\generated\\asm\\mate-named.iam",
+  "parameters": [
+    {"name": "d0", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:2", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0.5", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    {"name": "My Mate", "type": "kMateConstraintObject", "suppressed": "false", "health": "kUpToDateHealth", "occurrenceOne": "box:1", "occurrenceTwo": "box:2", "entityOne": "kFaceProxyObject", "entityTwo": "kFaceProxyObject", "geometryOne": "plane 1 0.5 0.5 normal 0 0 1", "geometryTwo": "plane 1 0.5 0.5 normal 0 0 -1", "gripOne": "face kPlaneSurface edges 4 point 1.2 0.5 0.5", "gripTwo": "face kPlaneSurface edges 4 point 0.8 0.5 0", "inferredOne": "kNoInference", "inferredTwo": "kNoInference", "offset": "0 mm", "mateSolution": "kNoSolutionType"}
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ]
+}

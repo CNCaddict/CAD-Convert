@@ -1,0 +1,25 @@
+{
+  "file": "corpus\\generated\\gaps\\pattern-fillet.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "1 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d5", "expression": "4 ul", "value": 4, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d6", "expression": "360 deg", "value": 6.2831853071795862, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "10 mm", "taper": "0 deg", "profile": "+line (-20, -20) (-20, 20), line (-20, -20) (20, -20), line (-20, 20) (20, 20), line (20, -20) (20, 20)", "health": "kUpToDateHealth"},
+    {"name": "Extrusion2", "type": "kExtrudeFeatureObject", "operation": "kCutOperation", "extent": "kThroughAllExtent", "direction": "kSymmetricExtentDirection", "taper": "0 deg", "profile": "+circle (10, 0) 3", "health": "kUpToDateHealth"},
+    {"name": "Fillet1", "type": "kFilletFeatureObject", "filletType": "kEdgeFillet", "automaticEdgeChain": "true", "smoothRadiusTransition": "false", "rollAlongSharpEdges": "false", "rollingBallWherePossible": "true", "preserveAllFeatures": "false", "sets": "1", "radius1": "1 mm", "radius1Param": "d4", "allFillets1": "false", "allRounds1": "false", "health": "kUpToDateHealth"},
+    {"name": "Circular Pattern1", "type": "kCircularPatternFeatureObject", "axis": "line through (0, 0, -10) along (0, 0, 1)", "axisType": "kWorkAxisObject", "naturalAxis": "true", "count": "4 ul", "countParam": "d5", "angle": "360 deg", "angleParam": "d6", "fitWithinAngle": "true", "midPlane": "false", "lockRotation": "false", "positioning": "kFittedPositioningMethod", "ofBody": "false", "parents": "Extrusion2, Fillet1", "computeType": "kOptimizedCompute", "elements": "4", "transforms": "1: 1 0 0 0, 0 1 0 0, 0 0 1 0; 2: 0 -1 0 0, 1 0 0 0, 0 0 1 0; 3: -1 0 0 0, 0 -1 0 0, 0 0 1 0; 4: 0 1 0 0, -1 0 0 0, 0 0 1 0", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["edge circle (10, 0, 5) 3", "axis line through (0, 0, -10) along (0, 0, 1)"]
+}

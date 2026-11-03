@@ -1,0 +1,17 @@
+{
+  "file": "corpus\\generated\\imate\\angle.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "30 mm", "value": 3, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "30 deg", "value": 0.52359877559829882, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "30 mm", "taper": "0 deg", "profile": "+circle (0, 0) 3", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "imates": [
+    {"name": "iAngle:1", "type": "kAngleiMateDefinitionObject", "index": "1", "suppressed": "false", "angle": "30 deg", "reversed": "false", "grip": "face kPlaneSurface edges 1 point 0 0 3", "matchList": ""}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "file": "corpus\\generated\\asm\\turned.iam",
+  "parameters": [
+    
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "0.877583 -0.479426 0 1 0.479426 0.877583 0 2 0 0 1 3", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    
+  ],
+  "joints": [
+    
+  ]
+}

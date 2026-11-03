@@ -1,0 +1,39 @@
+{
+  "file": "corpus\\generated\\unit\\functions.ipt",
+  "parameters": [
+    {"name": "Len", "expression": "2 mm", "value": 0.2, "units": "mm", "kind": "kUserParameterObject"},
+    {"name": "F_sin", "expression": "sin(30 deg)", "value": 0.49999999999999994, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_cos", "expression": "cos(30 deg)", "value": 0.86602540378443871, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_tan", "expression": "tan(30 deg)", "value": 0.57735026918962573, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_asin", "expression": "asin(0.5 ul)", "value": 0.52359877559829893, "units": "deg", "kind": "kUserParameterObject"},
+    {"name": "F_acos", "expression": "acos(0.5 ul)", "value": 1.0471975511965979, "units": "deg", "kind": "kUserParameterObject"},
+    {"name": "F_atan", "expression": "atan(0.5 ul)", "value": 0.46364760900080609, "units": "deg", "kind": "kUserParameterObject"},
+    {"name": "F_asinh", "expression": "asinh(0.5 ul)", "value": 0.48121182505960347, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_acosh", "expression": "acosh(1.5 ul)", "value": 0.96242365011920694, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_atanh", "expression": "atanh(0.5 ul)", "value": 0.54930614433405489, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_sqrt", "expression": "sqrt(Len * Len)", "value": 0.2, "units": "mm", "kind": "kUserParameterObject"},
+    {"name": "F_abs", "expression": "abs(-Len)", "value": 0.2, "units": "mm", "kind": "kUserParameterObject"},
+    {"name": "F_sign", "expression": "sign(-2 ul)", "value": 0, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_exp", "expression": "exp(1 ul)", "value": 2.7182818284590451, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_ln", "expression": "ln(2 ul)", "value": 0.69314718055994529, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_log", "expression": "log(100 ul)", "value": 2, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_floor", "expression": "floor(2.5 ul)", "value": 2, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_ceil", "expression": "ceil(2.5 ul)", "value": 3, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_round", "expression": "round(2.5 ul)", "value": 3, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_max", "expression": "max(Len;3 mm)", "value": 0.30000000000000004, "units": "mm", "kind": "kUserParameterObject"},
+    {"name": "F_min", "expression": "min(Len;3 mm)", "value": 0.2, "units": "mm", "kind": "kUserParameterObject"},
+    {"name": "F_pow", "expression": "pow(2 ul;3 ul)", "value": 8, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_random", "expression": "random()", "value": 0.017242957853938413, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_isolate", "expression": "isolate(Len;mm;ul)", "value": 2, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_pi", "expression": "PI * 1 ul", "value": 3.1415926535897931, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_e", "expression": "E * 1 ul", "value": 2.7182818284590451, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_neg", "expression": "-Len", "value": -0.2, "units": "mm", "kind": "kUserParameterObject"},
+    {"name": "F_mod", "expression": "7 ul % 3 ul", "value": 1, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_powop", "expression": "2 ul^4", "value": 2, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "F_brackets", "expression": "( Len + 1 mm ) * 2 ul", "value": 0.60000000000000009, "units": "mm", "kind": "kUserParameterObject"}
+  ],
+  "features": [
+  ],
+  "sketches": [
+  ]
+}

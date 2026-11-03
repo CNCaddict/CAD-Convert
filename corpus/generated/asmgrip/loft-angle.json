@@ -1,0 +1,32 @@
+{
+  "file": "corpus\\generated\\asmgrip\\loft-angle.iam",
+  "parameters": [
+    {"name": "d0", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d5", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d6", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "pin:1", "matrix": "1 0 0 3 0 1 0 3 0 0 1 3", "file": "pin.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "angle:1", "matrix": "1 0 0 -1 0 1 0 1 0 0 1 0", "file": "angle.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    {"name": "Mate:1", "type": "kMateConstraintObject", "suppressed": "true", "health": "kSuppressedHealth", "occurrenceOne": "angle:1", "occurrenceTwo": "box:1", "entityOne": "kFaceProxyObject", "entityTwo": "kFaceProxyObject", "geometryOne": "plane -1 1 2 normal 0 0 1", "geometryTwo": "plane 1 0.5 0.5 normal 0 0 1", "gripOne": "face kPlaneSurface edges 1 point 0 0 2", "gripTwo": "face kPlaneSurface edges 4 point 1.2 0.5 0.5", "inferredOne": "kNoInference", "inferredTwo": "kNoInference", "offset": "0 mm", "mateSolution": "kNoSolutionType"},
+    {"name": "Mate:2", "type": "kMateConstraintObject", "suppressed": "true", "health": "kSuppressedHealth", "occurrenceOne": "angle:1", "occurrenceTwo": "box:1", "entityOne": "kFaceProxyObject", "entityTwo": "kFaceProxyObject", "geometryOne": "plane -1 1 0 normal 0 0 -1", "geometryTwo": "plane 1 0.5 0.5 normal 0 0 1", "gripOne": "face kPlaneSurface edges 1 point 0 0 0", "gripTwo": "face kPlaneSurface edges 4 point 1.2 0.5 0.5", "inferredOne": "kNoInference", "inferredTwo": "kNoInference", "offset": "0 mm", "mateSolution": "kNoSolutionType"},
+    {"name": "Tangent:1", "type": "kTangentConstraintObject", "suppressed": "true", "health": "kSuppressedHealth", "occurrenceOne": "box:1", "occurrenceTwo": "angle:1", "entityOne": "kFaceProxyObject", "entityTwo": "kFaceProxyObject", "geometryOne": "plane 1 0.5 0.5 normal 0 0 1", "geometryTwo": "?", "gripOne": "face kPlaneSurface edges 4 point 1.2 0.5 0.5", "gripTwo": "face kBSplineSurface edges 3 point 0.375197 0.272597 1.214191", "offset": "0 mm", "insideTangency": "false"},
+    {"name": "Insert:1", "type": "kInsertConstraintObject", "suppressed": "true", "health": "kSuppressedHealth", "occurrenceOne": "angle:1", "occurrenceTwo": "pin:1", "entityOne": "kEdgeProxyObject", "entityTwo": "kEdgeProxyObject", "geometryOne": "circle -1 1 2 axis 0 0 -1 r 0.5", "geometryTwo": "circle 3 3 6 axis 0 0 1 r 0.3", "gripOne": "edge 0.5 0 2 0.5 0 2", "gripTwo": "edge 0.3 0 3 0.3 0 3", "distance": "0 mm", "axesOpposed": "true", "lockRotation": "false"},
+    {"name": "Insert:2", "type": "kInsertConstraintObject", "suppressed": "true", "health": "kSuppressedHealth", "occurrenceOne": "angle:1", "occurrenceTwo": "pin:1", "entityOne": "kEdgeProxyObject", "entityTwo": "kEdgeProxyObject", "geometryOne": "circle -1 1 0 axis 0 0 -1 r 1", "geometryTwo": "circle 3 3 6 axis 0 0 1 r 0.3", "gripOne": "edge 1 0 0 1 0 0", "gripTwo": "edge 0.3 0 3 0.3 0 3", "distance": "0 mm", "axesOpposed": "true", "lockRotation": "false"},
+    {"name": "Mate:3", "type": "kMateConstraintObject", "suppressed": "true", "health": "kSuppressedHealth", "occurrenceOne": "angle:1", "occurrenceTwo": "box:1", "entityOne": "kVertexProxyObject", "entityTwo": "kVertexProxyObject", "geometryOne": "point -0.5 1 2", "geometryTwo": "point 0 1 0", "gripOne": "vertex 0.5 0 2", "gripTwo": "vertex 0 1 0", "inferredOne": "kNoInference", "inferredTwo": "kNoInference", "offset": "0 mm", "mateSolution": "kNoSolutionType"},
+    {"name": "Mate:4", "type": "kMateConstraintObject", "suppressed": "true", "health": "kSuppressedHealth", "occurrenceOne": "angle:1", "occurrenceTwo": "box:1", "entityOne": "kVertexProxyObject", "entityTwo": "kVertexProxyObject", "geometryOne": "point 0 1 0", "geometryTwo": "point 0 1 0", "gripOne": "vertex 1 0 0", "gripTwo": "vertex 0 1 0", "inferredOne": "kNoInference", "inferredTwo": "kNoInference", "offset": "0 mm", "mateSolution": "kNoSolutionType"}
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ]
+}

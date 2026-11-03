@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\curve\\ellipse-arc.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 4, "dimensions": 0, "constraints": 3, "curves": "ellipse-arc center 10 20 major 1 0 radii 15 5 ends 22.816196 22.597972 6.46314 24.859019"}
+  ]
+}

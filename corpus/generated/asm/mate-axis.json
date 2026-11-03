@@ -1,0 +1,19 @@
+{
+  "file": "corpus\\generated\\asm\\mate-axis.iam",
+  "parameters": [
+    {"name": "d0", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "pin:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "pin.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "pin:2", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "pin.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    {"name": "Mate:1", "type": "kMateConstraintObject", "suppressed": "false", "health": "kUpToDateHealth", "occurrenceOne": "pin:1", "occurrenceTwo": "pin:2", "entityOne": "kFaceProxyObject", "entityTwo": "kFaceProxyObject", "geometryOne": "line 0 0 0 direction 0 0 1", "geometryTwo": "line 0 0 0 direction 0 0 1", "gripOne": "face kCylinderSurface edges 2 point 0.242705 -0.176336 1.5", "gripTwo": "face kCylinderSurface edges 2 point 0.242705 -0.176336 1.5", "inferredOne": "kInferredLine", "inferredTwo": "kInferredLine", "offset": "0 mm", "mateSolution": "kUndirectedSolutionType"}
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ]
+}

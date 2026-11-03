@@ -1,0 +1,19 @@
+{
+  "file": "corpus\\generated\\asm\\joint-flip-align.iam",
+  "parameters": [
+    {"name": "d0", "expression": "0.0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "-1 0 0 5 0 1 0 3 0 0 -1 3.5", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:2", "matrix": "1 0 0 3 0 1 0 3 0 0 1 3", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    
+  ],
+  "joints": [
+    {"name": "Rigid:1", "type": "kRigidJointType", "suppressed": "false", "occurrenceOne": "box:1", "occurrenceTwo": "box:2", "originOne": "point 1 0.5 0.5", "originTwo": "point 1 0.5 0", "originOneOn": "kFaceProxyObject", "originTwoOn": "kFaceProxyObject", "gripOne": "face kPlaneSurface edges 4 point 1.2 0.5 0.5", "gripTwo": "face kPlaneSurface edges 4 point 0.8 0.5 0", "flipOrigin": "false", "flipAlignment": "true", "gap": "0.0 mm"}
+  ],
+  "patterns": [
+    
+  ]
+}

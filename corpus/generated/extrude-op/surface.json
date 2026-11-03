@@ -1,0 +1,18 @@
+{
+  "file": "corpus\\generated\\extrude-op\\surface.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "10.000 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "5 mm", "value": 0.5, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "10 mm", "taper": "0 deg"},
+    {"name": "ExtrusionSrf1", "type": "kExtrudeFeatureObject", "operation": "kSurfaceOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "5 mm", "taper": "0 deg"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 2, "dimensions": 1, "constraints": 1}
+  ]
+}

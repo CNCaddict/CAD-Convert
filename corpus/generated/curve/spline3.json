@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\curve\\spline3.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 4, "dimensions": 0, "constraints": 3, "curves": "spline fit 0 0 10 9.999999 20 0 method kSweetSplineFit order 5 closed false rational false periodic false poles 0 0 0.625 1.249896 1.875 3.541415 3.75 6.353873 6.25 8.854025 8.75 10.104179 11.25 10.104179 13.75 8.854025 16.25 6.353873 18.125 3.541415 19.375 1.249896 20 0 knots 0 0 0 0 0 0.125 0.25 0.375 0.5 0.625 0.75 0.875 1 1 1 1 1"}
+  ]
+}

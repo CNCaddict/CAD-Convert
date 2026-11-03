@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\curve\\fixed.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 3, "dimensions": 0, "constraints": 2, "curves": "fixedspline order 4 closed false rational false periodic false poles 0 0 10 10 20 10 30 0 knots 0 0 0 0 1 1 1 1"}
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "file": "corpus\\generated\\sheet\\flange.ipt",
+  "parameters": [
+    {"name": "Thickness", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "BendRadius", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "BendReliefWidth", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "BendReliefDepth", "expression": "0.250 mm", "value": 0.025, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "CornerReliefSize", "expression": "2.000 mm", "value": 0.2, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "MinimumRemnant", "expression": "1.000 mm", "value": 0.1, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "TransitionRadius", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "JacobiRadiusSize", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "GapSize", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "d0", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "d1", "expression": "Thickness", "value": 0.05, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "Thickness * 0.5 ul", "value": 0.025, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "Thickness * 2.0 ul", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "Thickness", "value": 0.05, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d5", "expression": "20 mm", "value": 2, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d6", "expression": "90 deg", "value": 1.5707963267948966, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d7", "expression": "Thickness", "value": 0.05, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d8", "expression": "Thickness * 4 ul", "value": 0.2, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d9", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d10", "expression": "JacobiRadiusSize", "value": 0.05, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Face1", "type": "kFaceFeatureObject", "operation": "kNewBodyOperation", "direction": "kPositiveExtentDirection", "sketch": "Sketch1", "profile": "+line (-20, -20) (-20, 20), line (-20, -20) (20, -20), line (-20, 20) (20, 20), line (20, -20) (20, 20)", "health": "kUpToDateHealth"},
+    {"name": "Flange1", "type": "kFlangeFeatureObject", "flangeAngle": "90 deg", "height": "20 mm", "bendRadius": "Thickness", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12}
+  ],
+  "picked": ["edge line (20, -20, 0.5) (20, 20, 0.5)"]
+}

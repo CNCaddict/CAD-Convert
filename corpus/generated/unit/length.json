@@ -1,0 +1,16 @@
+{
+  "file": "corpus\\generated\\unit\\length.ipt",
+  "parameters": [
+    {"name": "U_mm", "expression": "2 mm", "value": 0.2, "units": "mm", "kind": "kUserParameterObject"},
+    {"name": "U_cm", "expression": "2 cm", "value": 2, "units": "cm", "kind": "kUserParameterObject"},
+    {"name": "U_m", "expression": "2 m", "value": 200, "units": "m", "kind": "kUserParameterObject"},
+    {"name": "U_in", "expression": "2 in", "value": 5.08, "units": "in", "kind": "kUserParameterObject"},
+    {"name": "U_ft", "expression": "2 ft", "value": 60.96, "units": "ft", "kind": "kUserParameterObject"},
+    {"name": "U_mil", "expression": "2 mil", "value": 0.00508, "units": "mil", "kind": "kUserParameterObject"},
+    {"name": "U_um", "expression": "2 micron", "value": 0.0002, "units": "micron", "kind": "kUserParameterObject"}
+  ],
+  "features": [
+  ],
+  "sketches": [
+  ]
+}

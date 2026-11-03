@@ -1,0 +1,19 @@
+{
+  "file": "corpus\\generated\\asm\\tangent.iam",
+  "parameters": [
+    {"name": "d0", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "pin:1", "matrix": "1 0 0 0 0 0 -1 1.5 0 1 0 0.8", "file": "pin.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    {"name": "Tangent:1", "type": "kTangentConstraintObject", "suppressed": "false", "health": "kUpToDateHealth", "occurrenceOne": "box:1", "occurrenceTwo": "pin:1", "entityOne": "kFaceProxyObject", "entityTwo": "kFaceProxyObject", "geometryOne": "plane 1 0.5 0.5 normal 0 0 1", "geometryTwo": "cylinder 0 1.5 0.8 axis 0 -1 0 r 0.3", "gripOne": "face kPlaneSurface edges 4 point 1.2 0.5 0.5", "gripTwo": "face kCylinderSurface edges 2 point 0.242705 -0.176336 1.5", "offset": "0 mm", "insideTangency": "false"}
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ]
+}

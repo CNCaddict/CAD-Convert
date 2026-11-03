@@ -1,0 +1,17 @@
+{
+  "file": "corpus\\generated\\imate\\mate-offset.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "30 mm", "value": 3, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "2 mm", "value": 0.2, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "30 mm", "taper": "0 deg", "profile": "+circle (0, 0) 3", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "imates": [
+    {"name": "Top", "type": "kMateiMateDefinitionObject", "index": "1", "suppressed": "false", "offset": "2 mm", "inferred": "kNoInference", "grip": "face kPlaneSurface edges 1 point 0 0 3", "matchList": ""}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "file": "corpus\\generated\\thread\\internal.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "10 mm", "taper": "0 deg", "profile": "+line (-10, -10) (-10, 10), line (-10, -10) (10, -10), line (-10, 10) (10, 10), line (10, -10) (10, 10)", "health": "kUpToDateHealth"},
+    {"name": "Extrusion2", "type": "kExtrudeFeatureObject", "operation": "kCutOperation", "extent": "kThroughAllExtent", "direction": "kSymmetricExtentDirection", "taper": "0 deg", "profile": "+circle (0, 0) 2.5", "health": "kUpToDateHealth"},
+    {"name": "Thread1", "type": "kThreadFeatureObject", "threadType": "ANSI Metric M Profile", "thread": "M6x1", "threadClass": "6H", "internal": "true", "rightHanded": "true", "fullDepth": "true", "directionReversed": "false", "faceRadius": "2.5", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "picked": ["face cylinder (0, 0, 0) along (0, 0, 1) r 2.5"]
+}

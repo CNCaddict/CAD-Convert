@@ -1,0 +1,27 @@
+{
+  "file": "corpus\\generated\\asmimate\\result-insert.iam",
+  "parameters": [
+    {"name": "d0", "expression": "1.000 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0.000000 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "0.000000 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "insert:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "insert.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "insert:2", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0.1", "file": "insert.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    {"name": "Insert:1", "type": "kInsertConstraintObject", "suppressed": "false", "health": "kUpToDateHealth", "occurrenceOne": "insert:1", "occurrenceTwo": "insert:2", "entityOne": "kEdgeProxyObject", "entityTwo": "kEdgeProxyObject", "geometryOne": "circle 0 0 3 axis 0 0 1 r 0.3", "geometryTwo": "circle 0 0 3.1 axis 0 0 1 r 0.3", "gripOne": "edge 0.3 0 3 0.3 0 3", "gripTwo": "edge 0.3 0 3 0.3 0 3", "distance": "1.000 mm", "axesOpposed": "false", "lockRotation": "false"}
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ],
+  "imates": [
+    
+  ],
+  "imateResults": [
+    {"name": "Insert:1", "type": "kiMateResultObject", "suppressed": "false", "composite": "false", "constraints": "Insert:1"}
+  ]
+}

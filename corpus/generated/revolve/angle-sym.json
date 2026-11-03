@@ -1,0 +1,12 @@
+{
+  "file": "corpus\\generated\\revolve\\angle-sym.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "90 deg", "value": 1.5707963267948966, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Revolution1", "type": "kRevolveFeatureObject", "operation": "kNewBodyOperation", "extent": "kAngleExtent", "direction": "kSymmetricExtentDirection", "angle": "90 deg", "axis": "kSketchLineObject", "sketch": "Sketch1", "twoDirectional": "false"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 9, "dimensions": 0, "constraints": 12}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "file": "corpus\\generated\\sweep\\taper.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "2 deg", "value": 0.034906585039886591, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Sweep1", "type": "kSweepFeatureObject", "operation": "kNewBodyOperation", "sweepType": "kPathSweepType", "orientation": "kNormalToPath", "scaling": "kXYProfileScaling", "taper": "2 deg", "twist": "0 deg", "sketch": "Sketch1", "profile": "+line (-2, -2) (-2, 2), line (-2, -2) (2, -2), line (-2, 2) (2, 2), line (2, -2) (2, 2)", "path": "Sketch2: line (0, 0) (0, 30)", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 3, "dimensions": 0, "constraints": 2}
+  ]
+}

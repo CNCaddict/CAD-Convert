@@ -1,0 +1,22 @@
+{
+  "file": "corpus\\generated\\pattern-rect\\xy.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "3 ul", "value": 3, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d6", "expression": "4 mm", "value": 0.4, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d7", "expression": "2 ul", "value": 2, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d9", "expression": "6 mm", "value": 0.60000000000000009, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "10 mm", "taper": "0 deg", "health": "kUpToDateHealth"},
+    {"name": "Extrusion2", "type": "kExtrudeFeatureObject", "operation": "kCutOperation", "extent": "kThroughAllExtent", "direction": "kSymmetricExtentDirection", "taper": "0 deg", "health": "kUpToDateHealth"},
+    {"name": "Rectangular Pattern1", "type": "kRectangularPatternFeatureObject", "xEntity": "line through (-10, 0, 0) along (1, 0, 0)", "xEntityType": "kWorkAxisObject", "naturalX": "true", "xCount": "3 ul", "xCountParam": "d4", "xSpacing": "4 mm", "xSpacingParam": "d6", "xSpacingType": "kDefault", "xMidPlane": "false", "yEntity": "line through (0, -10, 0) along (0, 1, 0)", "naturalY": "true", "yCount": "2 ul", "yCountParam": "d7", "ySpacing": "6 mm", "ySpacingParam": "d9", "ySpacingType": "kDefault", "yMidPlane": "false", "orientation": "kIdentical", "ofBody": "false", "parents": "Extrusion2", "computeType": "kOptimizedCompute", "elements": "6", "transforms": "1: 1 0 0 0, 0 1 0 0, 0 0 1 0; 2: 1 0 0 4, 0 1 0 0, 0 0 1 0; 3: 1 0 0 8, 0 1 0 0, 0 0 1 0; 4: 1 0 0 0, 0 1 0 6, 0 0 1 0; 5: 1 0 0 4, 0 1 0 6, 0 0 1 0; 6: 1 0 0 8, 0 1 0 6, 0 0 1 0", "health": "kDriverLostHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "picked": ["axis line through (-10, 0, 0) along (1, 0, 0)", "axis line through (0, -10, 0) along (0, 1, 0)"]
+}

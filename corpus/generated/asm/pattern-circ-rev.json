@@ -1,0 +1,27 @@
+{
+  "file": "corpus\\generated\\asm\\pattern-circ-rev.iam",
+  "parameters": [
+    {"name": "d0", "expression": "60 deg", "value": 1.0471975511965976, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "3.000000 ul", "value": 3, "units": "ul", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 3 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:2", "matrix": "0.5 0.866025 0 1.5 -0.866025 0.5 0 -2.598076 0 0 1 0", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:3", "matrix": "-0.5 0.866025 0 -1.5 -0.866025 -0.5 0 -2.598076 0 0 1 0", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    {"name": "Component Pattern 1:1", "type": "kCircularOccurrencePatternObject", "elementCount": "3.000000 ul", "angleOffset": "60 deg", "axisNatural": "false", "axisEntity": "kWorkAxisObject", "elements": "1 box:1; 2 box:2; 3 box:3"}
+  ],
+  "imates": [
+    
+  ],
+  "imateResults": [
+    
+  ]
+}

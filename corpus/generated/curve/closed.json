@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\curve\\closed.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 4, "dimensions": 0, "constraints": 3, "curves": "spline fit 0 0 20 0 10 20 0 0 method kSweetSplineFit order 5 closed true rational false periodic false poles 0 0 0.785316 -1.38439 2.837864 -3.82427 7.161561 -6.145862 13.746057 -5.903238 19.248041 -2.373034 22.079688 3.680856 21.594948 10.753881 18.121532 16.931184 12.637852 20.443729 6.514409 20.161655 1.237599 16.183635 -1.860467 9.763742 -1.874029 4.482067 -0.785316 1.38439 0 0 knots 0 0 0 0 0 0.083333 0.166667 0.25 0.333333 0.416667 0.5 0.583333 0.666667 0.75 0.833333 0.916667 1 1 1 1 1"}
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "file": "corpus\\generated\\gaps\\step-roll.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d5", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d6", "expression": "0.5 mm", "value": 0.05, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d7", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d8", "expression": "1 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "10 mm", "taper": "0 deg", "profile": "+line (-20, -10) (-20, 10), line (-20, -10) (20, -10), line (-20, 10) (20, 10), line (20, -10) (20, 10)", "health": "kUpToDateHealth"},
+    {"name": "Extrusion2", "type": "kExtrudeFeatureObject", "operation": "kJoinOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "10 mm", "taper": "0 deg", "profile": "+line (0, -10) (0, 10), line (0, -10) (20, -10), line (0, 10) (20, 10), line (20, -10) (20, 10)", "health": "kUpToDateHealth"},
+    {"name": "Extrusion3", "type": "kExtrudeFeatureObject", "operation": "kCutOperation", "extent": "kDistanceExtent", "direction": "kNegativeExtentDirection", "distance": "0.5 mm", "taper": "0 deg", "profile": "+line (-0.5, -10) (-0.5, 10), line (-0.5, -10) (-20, -10), line (-0.5, 10) (-20, 10), line (-20, -10) (-20, 10)", "health": "kUpToDateHealth"},
+    {"name": "Fillet1", "type": "kFilletFeatureObject", "filletType": "kEdgeFillet", "automaticEdgeChain": "true", "smoothRadiusTransition": "false", "rollAlongSharpEdges": "true", "rollingBallWherePossible": "true", "preserveAllFeatures": "false", "sets": "1", "radius1": "1 mm", "radius1Param": "d8", "allFillets1": "false", "allRounds1": "false", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch3", "entities": 8, "dimensions": 0, "constraints": 12}
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["edge line (0, -10, 10) (0, 10, 10)"]
+}

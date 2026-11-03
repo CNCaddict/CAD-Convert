@@ -1,0 +1,21 @@
+{
+  "file": "corpus\\generated\\asm\\mate-sub.iam",
+  "parameters": [
+    {"name": "d0", "expression": "1 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "sub:1", "matrix": "0.877583 -0.479426 0 0 0.479426 0.877583 0 0 0 0 1 0.6", "file": "sub.iam", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "flexible": "false", "documentType": "kAssemblyDocumentObject"},
+    {"name": "sub:1/box:1", "matrix": "0.877583 -0.479426 0 0 0.479426 0.877583 0 0 0 0 1 0.6", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "sub:1/pin:1", "matrix": "0.877583 -0.479426 0 0.63787 0.479426 0.877583 0 0.918217 0 0 1 1.1", "file": "pin.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    {"name": "Mate:1", "type": "kMateConstraintObject", "suppressed": "false", "health": "kUpToDateHealth", "occurrenceOne": "box:1", "occurrenceTwo": "sub:1", "entityOne": "kFaceProxyObject", "entityTwo": "kFaceProxyObject", "geometryOne": "plane 1 0.5 0.5 normal 0 0 1", "geometryTwo": "plane 0.63787 0.918217 0.6 normal 0 0 -1", "gripOne": "face kPlaneSurface edges 4 point 1.2 0.5 0.5", "gripTwo": "face kPlaneSurface edges 4 point 0.8 0.5 0", "inferredOne": "kNoInference", "inferredTwo": "kNoInference", "offset": "1 mm", "mateSolution": "kNoSolutionType"}
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ]
+}

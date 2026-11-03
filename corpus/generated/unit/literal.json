@@ -1,0 +1,17 @@
+{
+  "file": "corpus\\generated\\unit\\literal.ipt",
+  "parameters": [
+    {"name": "Len", "expression": "2 mm", "value": 0.2, "units": "mm", "kind": "kUserParameterObject"},
+    {"name": "B_in", "expression": "1 in", "value": 2.54, "units": "mm", "kind": "kUserParameterObject"},
+    {"name": "B_cm", "expression": "2.5 cm", "value": 2.5, "units": "mm", "kind": "kUserParameterObject"},
+    {"name": "Ang", "expression": "1 rad", "value": 1, "units": "deg", "kind": "kUserParameterObject"},
+    {"name": "Ratio", "expression": "Len / 1 mm", "value": 2, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "Area", "expression": "Len * Len", "value": 0.040000000000000008, "units": "mm^2", "kind": "kUserParameterObject"},
+    {"name": "Speed", "expression": "Len / 1 s", "value": 0.2, "units": "mm/s", "kind": "kUserParameterObject"},
+    {"name": "Mixed", "expression": "Len + 1 in", "value": 2.74, "units": "mm", "kind": "kUserParameterObject"}
+  ],
+  "features": [
+  ],
+  "sketches": [
+  ]
+}

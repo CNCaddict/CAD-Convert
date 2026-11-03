@@ -1,0 +1,23 @@
+{
+  "file": "corpus\\generated\\asm\\pattern-independent.iam",
+  "parameters": [
+    {"name": "d0", "expression": "2.0 mm", "value": 0.2, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "30 mm", "value": 3, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "1 ul", "value": 1, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "3.000000 ul", "value": 3, "units": "ul", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:2", "matrix": "1 0 0 3 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:3", "matrix": "1 0 0 6 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    {"name": "Component Pattern 1:1", "type": "kRectangularOccurrencePatternObject", "columnCount": "3.000000 ul", "columnOffset": "30 mm", "columnNatural": "true", "rowCount": "1 ul", "rowOffset": "2.0 mm", "rowNatural": "true", "elements": "1 box:1; 2 independent ; 3 box:3"}
+  ]
+}

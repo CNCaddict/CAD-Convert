@@ -1,0 +1,16 @@
+{
+  "file": "corpus\\generated\\hole-placement\\point.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "5 mm", "value": 0.5, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d9", "expression": "6 mm", "value": 0.60000000000000009, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "10 mm", "taper": "0 deg"},
+    {"name": "Hole1", "type": "kHoleFeatureObject", "holeType": "kDrilledHole", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "6 mm", "distanceParam": "d9", "diameter": "5 mm", "diameterParam": "d4", "flatBottom": "true", "drillPoint": "kFlatDrillPointType", "placement": "kPointPlacementType", "centers": "1", "tapped": "false"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12}
+  ]
+}

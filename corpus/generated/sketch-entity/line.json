@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\sketch-entity\\line.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 3, "dimensions": 0, "constraints": 2}
+  ]
+}

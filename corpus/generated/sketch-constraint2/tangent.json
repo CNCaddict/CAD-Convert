@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\sketch-constraint2\\tangent.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 28, "dimensions": 0, "constraints": 18}
+  ]
+}

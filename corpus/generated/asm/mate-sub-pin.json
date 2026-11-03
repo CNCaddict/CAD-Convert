@@ -1,0 +1,22 @@
+{
+  "file": "corpus\\generated\\asm\\mate-sub-pin.iam",
+  "parameters": [
+    {"name": "d0", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "sub:1", "matrix": "1 0 0 3 0 0.877583 -0.479426 4 0 0.479426 0.877583 5", "file": "sub.iam", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "flexible": "false", "documentType": "kAssemblyDocumentObject"},
+    {"name": "sub:1/box:1", "matrix": "1 0 0 3 0 0.877583 -0.479426 4 0 0.479426 0.877583 5", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "sub:1/pin:1", "matrix": "1 0 0 4 0 0.877583 -0.479426 4.199079 0 0.479426 0.877583 5.678504", "file": "pin.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "pin:1", "matrix": "1 0 0 4 0 -0.877583 0.479426 1.322525 0 -0.479426 -0.877583 10.943999", "file": "pin.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    {"name": "Insert:1", "type": "kInsertConstraintObject", "suppressed": "false", "health": "kUpToDateHealth", "occurrenceOne": "sub:1", "occurrenceTwo": "pin:1", "entityOne": "kEdgeProxyObject", "entityTwo": "kEdgeProxyObject", "geometryOne": "circle 4 2.760802 8.311252 axis 0 -0.479426 0.877583 r 0.3", "geometryTwo": "circle 4 2.760802 8.311252 axis 0 0.479426 -0.877583 r 0.3", "gripOne": "edge 0.3 0 3 0.3 0 3", "gripTwo": "edge 0.3 0 3 0.3 0 3", "distance": "0 mm", "axesOpposed": "true", "lockRotation": "false"}
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ]
+}

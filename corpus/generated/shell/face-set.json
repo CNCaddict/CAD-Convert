@@ -1,0 +1,17 @@
+{
+  "file": "corpus\\generated\\shell\\face-set.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "20 mm", "value": 2, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "4 mm", "value": 0.4, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "2 mm", "value": 0.2, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "20 mm", "taper": "0 deg", "profile": "+line (-20, -20) (-20, 20), line (-20, -20) (20, -20), line (-20, 20) (20, 20), line (20, -20) (20, 20)", "health": "kUpToDateHealth"},
+    {"name": "Shell1", "type": "kShellFeatureObject", "direction": "kInsideShellDirection", "thickness": "2 mm", "thicknessParam": "d3", "removedFaces": "1", "faceSets": "1", "faceSet1": "4 mm on 1", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12}
+  ],
+  "picked": ["face plane (0, 0, 1) 20", "face plane (1, 0, 0) 20"]
+}

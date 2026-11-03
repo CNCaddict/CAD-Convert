@@ -1,0 +1,11 @@
+{
+  "file": "corpus\\generated\\circle-diameter\\d11.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "11 mm", "value": 1.1, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 1, "constraints": 1}
+  ]
+}

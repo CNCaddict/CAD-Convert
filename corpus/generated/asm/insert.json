@@ -1,0 +1,19 @@
+{
+  "file": "corpus\\generated\\asm\\insert.iam",
+  "parameters": [
+    {"name": "d0", "expression": "0 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "pin:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "pin.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "pin:2", "matrix": "1 0 0 0 0 1 0 0 0 0 1 3", "file": "pin.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    {"name": "Insert:1", "type": "kInsertConstraintObject", "suppressed": "false", "health": "kUpToDateHealth", "occurrenceOne": "pin:1", "occurrenceTwo": "pin:2", "entityOne": "kEdgeProxyObject", "entityTwo": "kEdgeProxyObject", "geometryOne": "circle 0 0 3 axis 0 0 1 r 0.3", "geometryTwo": "circle 0 0 3 axis 0 0 -1 r 0.3", "gripOne": "edge 0.3 0 3 0.3 0 3", "gripTwo": "edge 0.3 0 0 0.3 0 0", "distance": "0 mm", "axesOpposed": "true", "lockRotation": "false"}
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "file": "corpus\\generated\\sketch-constraint2\\dim-angle.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "90.00 deg", "value": 1.5707963267948966, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 28, "dimensions": 1, "constraints": 17}
+  ]
+}

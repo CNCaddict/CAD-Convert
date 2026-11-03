@@ -1,0 +1,17 @@
+{
+  "file": "corpus\\generated\\pattern-rect\\body.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "2 ul", "value": 2, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "40 mm", "value": 4, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "10 mm", "taper": "0 deg", "health": "kUpToDateHealth"},
+    {"name": "Rectangular Pattern1", "type": "kRectangularPatternFeatureObject", "xEntity": "line through (-10, 0, 0) along (1, 0, 0)", "xEntityType": "kWorkAxisObject", "naturalX": "true", "xCount": "2 ul", "xCountParam": "d2", "xSpacing": "40 mm", "xSpacingParam": "d4", "xSpacingType": "kDefault", "xMidPlane": "false", "yMidPlane": "false", "orientation": "kIdentical", "ofBody": "true", "parents": "", "computeType": "kOptimizedCompute", "newBody": "false", "elements": "2", "transforms": "1: 1 0 0 0, 0 1 0 0, 0 0 1 0; 2: 1 0 0 40, 0 1 0 0, 0 0 1 0", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12}
+  ],
+  "picked": ["axis line through (-10, 0, 0) along (1, 0, 0)"]
+}

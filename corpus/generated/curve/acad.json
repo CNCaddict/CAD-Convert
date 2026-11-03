@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\curve\\acad.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 6, "dimensions": 0, "constraints": 5, "curves": "spline fit 0 0 10 10 20 0 30 15 40 5 method kACADSplineFit order 4 closed false rational false periodic false poles 0 0 3.275007 5.694725 9.825022 17.084174 21.695887 -10.664864 28.352933 23.688343 36.443377 10.706791 40 5 knots 0 0 0 0 1.414214 2.828427 4.631203 6.045416 6.045416 6.045416 6.045416"}
+  ]
+}

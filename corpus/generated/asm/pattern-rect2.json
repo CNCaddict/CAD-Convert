@@ -1,0 +1,26 @@
+{
+  "file": "corpus\\generated\\asm\\pattern-rect2.iam",
+  "parameters": [
+    {"name": "d0", "expression": "20 mm", "value": 2, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "30 mm", "value": 3, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "2.000000 ul", "value": 2, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "3.000000 ul", "value": 3, "units": "ul", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:2", "matrix": "1 0 0 0 0 1 0 -2 0 0 1 0", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:3", "matrix": "1 0 0 3 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:4", "matrix": "1 0 0 3 0 1 0 -2 0 0 1 0", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:5", "matrix": "1 0 0 6 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:6", "matrix": "1 0 0 6 0 1 0 -2 0 0 1 0", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    {"name": "Component Pattern 1:1", "type": "kRectangularOccurrencePatternObject", "columnCount": "3.000000 ul", "columnOffset": "30 mm", "columnNatural": "true", "rowCount": "2.000000 ul", "rowOffset": "20 mm", "rowNatural": "false", "elements": "1 box:1; 2 box:2; 3 box:3; 4 box:4; 5 box:5; 6 box:6"}
+  ]
+}

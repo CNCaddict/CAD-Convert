@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\curve\\control.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 10, "dimensions": 0, "constraints": 2, "curves": "controlpointspline control 0 0 10 10 20 0 30 15 40 5 order 5 closed false rational false periodic false poles 0 0 10 10 20 0 30 15 40 5 knots 1 1 1 1 1 2 2 2 2 2"}
+  ]
+}

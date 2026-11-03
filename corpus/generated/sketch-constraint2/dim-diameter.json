@@ -1,0 +1,11 @@
+{
+  "file": "corpus\\generated\\sketch-constraint2\\dim-diameter.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10.000 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 28, "dimensions": 1, "constraints": 17}
+  ]
+}

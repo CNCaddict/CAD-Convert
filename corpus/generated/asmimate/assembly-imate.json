@@ -1,0 +1,24 @@
+{
+  "file": "corpus\\generated\\asmimate\\assembly-imate.iam",
+  "parameters": [
+    {"name": "d0", "expression": "1 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ],
+  "imates": [
+    {"name": "OnBox", "type": "kMateiMateDefinitionObject", "index": "1", "suppressed": "false", "offset": "1 mm", "inferred": "kNoInference", "grip": "face kPlaneSurface edges 4 point 1.2 0.5 0.5", "matchList": ""}
+  ],
+  "imateResults": [
+    
+  ]
+}

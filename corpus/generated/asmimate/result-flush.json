@@ -1,0 +1,27 @@
+{
+  "file": "corpus\\generated\\asmimate\\result-flush.iam",
+  "parameters": [
+    {"name": "d0", "expression": "1.000 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0.000000 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "0.000000 mm", "value": 0, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "flush:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "flush.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "flush:2", "matrix": "1 0 0 3 0 1 0 3 0 0 1 0.1", "file": "flush.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    {"name": "Flush:1", "type": "kFlushConstraintObject", "suppressed": "false", "health": "kUpToDateHealth", "occurrenceOne": "flush:1", "occurrenceTwo": "flush:2", "entityOne": "kFaceProxyObject", "entityTwo": "kFaceProxyObject", "geometryOne": "plane 0 0 3 normal 0 0 1", "geometryTwo": "plane 3 3 3.1 normal 0 0 1", "gripOne": "face kPlaneSurface edges 1 point 0 0 3", "gripTwo": "face kPlaneSurface edges 1 point 0 0 3", "offset": "1.000 mm"}
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ],
+  "imates": [
+    
+  ],
+  "imateResults": [
+    {"name": "Flush:1", "type": "kiMateResultObject", "suppressed": "false", "composite": "false", "constraints": "Flush:1"}
+  ]
+}

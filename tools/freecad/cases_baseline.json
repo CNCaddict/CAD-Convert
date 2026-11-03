@@ -1,0 +1,1445 @@
+{
+ "asmparts-box": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "asmparts-pin": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "chamfer-distance": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "chamfer-distance-angle": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "chamfer-edges4": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "chamfer-no-chain": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "chamfer-no-setback": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "chamfer-preserve": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "chamfer-two-distances": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "circle-diameter-d10": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "circle-diameter-d11": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "circle-diameter-d12_5": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-acad": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-closed": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-control": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-ellipse": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-ellipse-arc": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-ellipse-rot": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-fixed": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-image": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-image-rotated": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-projected": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 6.250702818198449e-09
+ },
+ "curve-projected-closed": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0002515144839121702
+ },
+ "curve-projected-ellipse": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 3.8600154000813526e-16
+ },
+ "curve-rational": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-smooth": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-spline3": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-spline5": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-sweet": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-text": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-text-box": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "curve-text-rotated": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "extrude-direction-neg": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "extrude-direction-pos": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.447505775030507e-16
+ },
+ "extrude-direction-sym": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.447505775030507e-16
+ },
+ "extrude-distance-L10": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.447505775030507e-16
+ },
+ "extrude-distance-L11": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.3159143409368246e-16
+ },
+ "extrude-distance-L20": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.447505775030507e-16
+ },
+ "extrude-extent-distance": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.2606304857444787e-16
+ },
+ "extrude-extent-from-to": {
+  "bad": [
+   "Extrusion2: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.0704689414354621e-16
+ },
+ "extrude-extent-taper": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "extrude-extent-through-all": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "extrude-extent-through-all-sym": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.4146304083714378e-16
+ },
+ "extrude-extent-to-face": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "extrude-extent-to-next": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "extrude-extent-to-plane": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "extrude-extent-two-distances": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.2606304857444787e-16
+ },
+ "extrude-op-cut": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.2606304857444787e-16
+ },
+ "extrude-op-intersect": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.447505775030507e-16
+ },
+ "extrude-op-join": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "extrude-op-newbody": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "extrude-op-surface": {
+  "bad": [
+   "ExtrusionSrf1: skipped"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.07003353082354109
+ },
+ "fillet-all-rounds": {
+  "bad": [
+   "Fillet1: skipped"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.041929221058781906
+ },
+ "fillet-edge": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "fillet-edges4": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 5.329834002714563e-10
+ },
+ "fillet-no-chain": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "fillet-no-rolling-ball": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "fillet-no-smooth": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "fillet-preserve": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "fillet-roll-sharp": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "fillet-two-sets": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.15295102875459e-16
+ },
+ "formula-alpha": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "formula-bravo": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "formula-chain": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "formula-func": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "formula-lit": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "formula-mul1": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "formula-sum": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "gaps-end-of-part": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.195555048420538e-16
+ },
+ "gaps-loft-long-centerline": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0004950278268472892
+ },
+ "gaps-mirror-fillet": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "gaps-pattern-fillet": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "gaps-step-plain": {
+  "bad": [
+   "Fillet1: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "gaps-step-plain-r3": {
+  "bad": [
+   "Fillet1: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "gaps-step-roll": {
+  "bad": [
+   "Fillet1: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "gaps-step-roll-r3": {
+  "bad": [
+   "Fillet1: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "hole-cbore": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.192354399844759e-16
+ },
+ "hole-csink": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.3456116889977377e-16
+ },
+ "hole-drilled": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1654733980382804e-16
+ },
+ "hole-drilled-neg": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "hole-flat": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1654733980382804e-16
+ },
+ "hole-left-hand": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1645086959587597e-16
+ },
+ "hole-placement-concentric": {
+  "bad": [
+   "Hole1: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.5039021039277996e-16
+ },
+ "hole-placement-linear": {
+  "bad": [
+   "Hole1: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "hole-placement-point": {
+  "bad": [
+   "Hole1: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1713680129421844e-16
+ },
+ "hole-spotface": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1884385882353778e-16
+ },
+ "hole-tapped": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1645086959587597e-16
+ },
+ "hole-tapped-depth": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1645086959587597e-16
+ },
+ "hole-through": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1654733980382804e-16
+ },
+ "hole-tip": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1654733980382804e-16
+ },
+ "hole-two-points": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-angle": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-angle-reversed": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-composite": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-flush": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-insert": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-insert-opposed": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-matchlist": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-mate": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-mate-axis": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-mate-offset": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-suppressed": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-tangent": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-tangent-inside": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imate-two": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imported-block": {
+  "bad": [
+   "Base1: skipped"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "loft-angle": {
+  "bad": [
+   "Loft1: approximate"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.5106351341436923
+ },
+ "loft-center": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0004950278268472892
+ },
+ "loft-closed": {
+  "bad": [],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.2861374788241468
+ },
+ "loft-cut": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "loft-from-face": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.4360442659572551e-16
+ },
+ "loft-merge": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.2407192357404348e-16
+ },
+ "loft-point": {
+  "bad": [
+   "Loft1: skipped"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "loft-rail": {
+  "bad": [
+   "Loft1: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.2407192357404348e-16
+ },
+ "loft-tangent-plane": {
+  "bad": [
+   "Loft1: skipped"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "loft-three": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 7.653330614492244e-05
+ },
+ "loft-two": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.2407192357404348e-16
+ },
+ "mirror-adjust": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1550112515292495e-16
+ },
+ "mirror-body": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "mirror-face": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.5238031174202215e-16
+ },
+ "mirror-identical": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1550112515292495e-16
+ },
+ "mirror-offset": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "mirror-two": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.299015752931965e-16
+ },
+ "mirror-xz": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1550112515292495e-16
+ },
+ "mirror-yz": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1550112515292495e-16
+ },
+ "noise-a": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "noise-b": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "pattern-circ-adjust": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 3.5212277644113935e-16
+ },
+ "pattern-circ-fit90": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.173742588137131e-16
+ },
+ "pattern-circ-lock": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 3.5212277644113935e-16
+ },
+ "pattern-circ-mid": {
+  "bad": [
+   "Circular Pattern1: approximate"
+  ],
+  "kind": "differs",
+  "surface_far": 0.13157894736842105,
+  "volume_off": 3.5212277644113935e-16
+ },
+ "pattern-circ-reversed": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "pattern-circ-step30": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.173742588137131e-16
+ },
+ "pattern-circ-z6": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.193091489073151e-16
+ },
+ "pattern-rect-adjust": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.3286031741193654e-16
+ },
+ "pattern-rect-body": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "pattern-rect-count5": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1458680034703758e-16
+ },
+ "pattern-rect-edge": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1458680034703758e-16
+ },
+ "pattern-rect-fitted": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1458680034703758e-16
+ },
+ "pattern-rect-mid": {
+  "bad": [],
+  "kind": "differs",
+  "surface_far": 0.1267605633802817,
+  "volume_off": 3.4929047611790486e-16
+ },
+ "pattern-rect-orient": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1458680034703758e-16
+ },
+ "pattern-rect-reversed": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1458680034703758e-16
+ },
+ "pattern-rect-x3": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1458680034703758e-16
+ },
+ "pattern-rect-x5-adjust": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 4.733351799361258e-16
+ },
+ "pattern-rect-xy": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1458680034703758e-16
+ },
+ "pattern-rect-xy-adjust": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 7.158548934438908e-16
+ },
+ "profile-all": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1368683772161603e-16
+ },
+ "profile-inner-only": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.447505775030507e-16
+ },
+ "profile-no-combine": {
+  "bad": [],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.046790559017545454
+ },
+ "profile-no-hole": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.1673473406336928e-16
+ },
+ "profile-outer-only": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "profile-overlap": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 3.1201181071016566e-16
+ },
+ "profile-revolve": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 3.4793782069869503e-16
+ },
+ "profile-separate-only": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.447505775030507e-16
+ },
+ "revolve-angle": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "revolve-angle-neg": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "revolve-angle-sym": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.930007700040676e-16
+ },
+ "revolve-cut": {
+  "bad": [],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.07101656471697136
+ },
+ "revolve-full": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.930007700040676e-16
+ },
+ "revolve-join": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "revolve-line-axis": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.930007700040676e-16
+ },
+ "revolve-x-axis": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.447505775030507e-16
+ },
+ "sheet-bend": {
+  "bad": [
+   "Bend2: skipped",
+   "Bend1: skipped"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.11429280486881244
+ },
+ "sheet-corner": {
+  "bad": [
+   "Corner3: skipped"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.004333242088283113
+ },
+ "sheet-corner-gap": {
+  "bad": [
+   "Corner3: skipped"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.008863678672387647
+ },
+ "sheet-corner-overlap": {
+  "bad": [
+   "Corner3: skipped"
+  ],
+  "kind": "differs",
+  "surface_far": 0.030303030303030304,
+  "volume_off": 2.9207654695486456e-16
+ },
+ "sheet-corner-reverse": {
+  "bad": [
+   "Corner3: skipped"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1683061878194573e-15
+ },
+ "sheet-flange": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "sheet-flange-angle": {
+  "bad": [
+   "Plate2: skipped",
+   "Bend1: skipped",
+   "Corner1: skipped"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.3292045608532692
+ },
+ "sheet-flange-height": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 6.573574136844303e-16
+ },
+ "sheet-flange-reversed": {
+  "bad": [],
+  "kind": "differs",
+  "surface_far": 0.5972222222222222,
+  "volume_off": 5.763289612916881e-16
+ },
+ "sheet-hole": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.4944438105256721e-16
+ },
+ "sheet-plate": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "sheet-reversed": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "shell-both": {
+  "bad": [
+   "Shell1: skipped"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 2.330557868442965
+ },
+ "shell-face-set": {
+  "bad": [
+   "Shell1: approximate"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.13001605136436623
+ },
+ "shell-inside": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "shell-no-face": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "shell-outside": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "shell-two-faces": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "sketch-constraint-dim": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint-equal": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint-fix": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint-horizontal": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint-hv": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint-none": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint-parallel": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint-perpendicular": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint-vertical": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-base": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-collinear": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-concentric": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-dim-aligned": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-dim-angle": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-dim-diameter": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-dim-horizontal": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-dim-radius": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-dim-vertical": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-equal-radius": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-merge": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-midpoint": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-point-on-line": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-symmetry": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-constraint2-tangent": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-entity-arc": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-entity-circle": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-entity-empty": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-entity-line": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-entity-point": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-line-l12": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-line-l13": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sketch-line-s05": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "sweep-curved": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "sweep-cut": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "sweep-line": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1842378929335005e-16
+ },
+ "sweep-parallel": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 5.329070518200749e-16
+ },
+ "sweep-rail": {
+  "bad": [
+   "Sweep1: approximate"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.5714285714285714
+ },
+ "sweep-taper": {
+  "bad": [
+   "Sweep1: approximate"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.3809088585279014
+ },
+ "sweep-twist": {
+  "bad": [
+   "Sweep1: approximate"
+  ],
+  "kind": "differs",
+  "surface_far": null,
+  "volume_off": 0.0010391749734657328
+ },
+ "thread-depth": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "thread-full": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "thread-internal": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.391110096841076e-16
+ },
+ "thread-left": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "thread-reversed": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "unit-functions": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "unit-inch-doc": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.4133155518577407e-16
+ },
+ "unit-length": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "unit-literal": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "unit-other": {
+  "bad": [],
+  "kind": "no solid",
+  "surface_far": null,
+  "volume_off": null
+ },
+ "user-parameter-literal": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "user-parameter-param": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ }
+}

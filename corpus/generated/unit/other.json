@@ -1,0 +1,19 @@
+{
+  "file": "corpus\\generated\\unit\\other.ipt",
+  "parameters": [
+    {"name": "U_deg", "expression": "2 deg", "value": 0.034906585039886591, "units": "deg", "kind": "kUserParameterObject"},
+    {"name": "U_rad", "expression": "2 rad", "value": 2, "units": "rad", "kind": "kUserParameterObject"},
+    {"name": "U_ul", "expression": "2 ul", "value": 2, "units": "ul", "kind": "kUserParameterObject"},
+    {"name": "U_s", "expression": "2 s", "value": 2, "units": "s", "kind": "kUserParameterObject"},
+    {"name": "U_kg", "expression": "2 kg", "value": 2, "units": "kg", "kind": "kUserParameterObject"},
+    {"name": "U_lbmass", "expression": "2 lbmass", "value": 0.90718474, "units": "lbmass", "kind": "kUserParameterObject"},
+    {"name": "U_N", "expression": "2 N", "value": 200, "units": "N", "kind": "kUserParameterObject"},
+    {"name": "U_mm2", "expression": "2 mm^2", "value": 0.020000000000000004, "units": "mm^2", "kind": "kUserParameterObject"},
+    {"name": "U_mm3", "expression": "2 mm^3", "value": 0.0020000000000000005, "units": "mm^3", "kind": "kUserParameterObject"},
+    {"name": "U_mmps", "expression": "2 mm/s", "value": 0.2, "units": "mm/s", "kind": "kUserParameterObject"}
+  ],
+  "features": [
+  ],
+  "sketches": [
+  ]
+}

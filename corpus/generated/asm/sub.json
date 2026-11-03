@@ -1,0 +1,18 @@
+{
+  "file": "corpus\\generated\\asm\\sub.iam",
+  "parameters": [
+    
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "sub:1", "matrix": "0.877583 -0.479426 0 3 0.479426 0.877583 0 4 0 0 1 5", "file": "sub.iam", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "flexible": "false", "documentType": "kAssemblyDocumentObject"},
+    {"name": "sub:1/box:1", "matrix": "0.877583 -0.479426 0 3 0.479426 0.877583 0 4 0 0 1 5", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "sub:1/pin:1", "matrix": "0.877583 -0.479426 0 3.63787 0.479426 0.877583 0 4.918217 0 0 1 5.5", "file": "pin.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    
+  ],
+  "joints": [
+    
+  ]
+}

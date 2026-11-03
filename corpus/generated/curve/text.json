@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\curve\\text.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 1, "dimensions": 0, "constraints": 0, "curves": "text 'ABC' 10 20"}
+  ]
+}

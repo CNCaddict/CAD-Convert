@@ -1,0 +1,19 @@
+{
+  "file": "corpus\\generated\\asm\\angle.iam",
+  "parameters": [
+    {"name": "d0", "expression": "30 deg", "value": 0.52359877559829882, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "box:2", "matrix": "1 0 0 3 0 0.866025 -0.5 3 0 0.5 0.866025 3", "file": "box.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    {"name": "Angle:1", "type": "kAngleConstraintObject", "suppressed": "false", "health": "kUpToDateHealth", "occurrenceOne": "box:1", "occurrenceTwo": "box:2", "entityOne": "kFaceProxyObject", "entityTwo": "kFaceProxyObject", "geometryOne": "point 0 0 1", "geometryTwo": "point 0 -0.5 0.866025", "gripOne": "face kPlaneSurface edges 4 point 1.2 0.5 0.5", "gripTwo": "face kPlaneSurface edges 4 point 1.2 0.5 0.5", "angle": "30 deg", "mateSolution": "78593", "directed": "true"}
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ]
+}

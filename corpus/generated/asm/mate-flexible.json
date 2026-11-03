@@ -1,0 +1,21 @@
+{
+  "file": "corpus\\generated\\asm\\mate-flexible.iam",
+  "parameters": [
+    {"name": "d0", "expression": "1 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "occurrences": [
+    {"name": "box:1", "matrix": "1 0 0 0 0 1 0 0 0 0 1 0", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "sub:1", "matrix": "1 0 0 3 0 1 0 4 0 0 1 5", "file": "sub.iam", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "flexible": "true", "documentType": "kAssemblyDocumentObject"},
+    {"name": "sub:1/box:1", "matrix": "1 0 0 3 0 1 0 4 0 0 1 5", "file": "box.ipt", "grounded": "true", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"},
+    {"name": "sub:1/pin:1", "matrix": "1 0 0 0 0 0 1 0 0 -1 0 0.6", "file": "pin.ipt", "grounded": "false", "visible": "true", "suppressed": "false", "adaptive": "false", "documentType": "kPartDocumentObject"}
+  ],
+  "constraints": [
+    {"name": "Mate:1", "type": "kMateConstraintObject", "suppressed": "false", "health": "kUpToDateHealth", "occurrenceOne": "box:1", "occurrenceTwo": "sub:1", "entityOne": "kFaceProxyObject", "entityTwo": "kFaceProxyObject", "geometryOne": "plane 1 0.5 0.5 normal 0 0 1", "geometryTwo": "line 0 0 0.6 direction 0 1 0", "gripOne": "face kPlaneSurface edges 4 point 1.2 0.5 0.5", "gripTwo": "face kCylinderSurface edges 2 point 0.242705 -0.176336 1.5", "inferredOne": "kNoInference", "inferredTwo": "kInferredLine", "offset": "1 mm", "mateSolution": "kNoSolutionType"}
+  ],
+  "joints": [
+    
+  ],
+  "patterns": [
+    
+  ]
+}

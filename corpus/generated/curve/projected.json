@@ -1,0 +1,15 @@
+{
+  "file": "corpus\\generated\\curve\\projected.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "10 mm", "taper": "0 deg", "profile": "+kSketchSplineObject, line (0, 0) (20, 0)", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 5, "dimensions": 0, "constraints": 5, "curves": "spline fit 0 0 10 10 20 0 method kSweetSplineFit order 5 closed false rational false periodic false poles 0 0 0.625 1.249896 1.875 3.541415 3.75 6.353874 6.25 8.854025 8.75 10.104179 11.25 10.104179 13.75 8.854025 16.25 6.353874 18.125 3.541415 19.375 1.249896 20 0 knots 0 0 0 0 0 0.125 0.25 0.375 0.5 0.625 0.75 0.875 1 1 1 1 1"},
+    {"name": "Sketch2", "entities": 3, "dimensions": 0, "constraints": 0, "curves": "spline projected order 5 closed false rational false periodic false poles 20 0 19.375 1.249896 18.125 3.541415 16.25 6.353874 13.75 8.854025 11.25 10.104179 8.75 10.104179 6.25 8.854025 3.75 6.353874 1.875 3.541415 0.625 1.249896 0 0 knots -1 -1 -1 -1 -1 -0.875 -0.75 -0.625 -0.5 -0.375 -0.25 -0.125 0 0 0 0 0 reference"}
+  ]
+}

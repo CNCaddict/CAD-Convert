@@ -1,0 +1,25 @@
+{
+  "file": "corpus\\generated\\gaps\\mirror-fillet.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "5 mm", "value": 0.5, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "8 mm", "value": 0.8, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d5", "expression": "1 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "10 mm", "taper": "0 deg", "profile": "+line (-20, -20) (-20, 20), line (-20, -20) (20, -20), line (-20, 20) (20, 20), line (20, -20) (20, 20)", "health": "kUpToDateHealth"},
+    {"name": "Extrusion2", "type": "kExtrudeFeatureObject", "operation": "kJoinOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "8 mm", "taper": "0 deg", "profile": "+circle (10, 5) 3", "health": "kUpToDateHealth"},
+    {"name": "Mirror1", "type": "kMirrorFeatureObject", "plane": "plane (1, 0, 0) 0", "planeType": "kWorkPlaneObject", "ofBody": "false", "removeOriginal": "false", "parents": "Extrusion2", "computeType": "kOptimizedCompute", "elements": "2", "transforms": "1: 1 0 0 0, 0 1 0 0, 0 0 1 0; 2: -1 0 0 0, 0 1 0 0, 0 0 1 0", "health": "kUpToDateHealth"},
+    {"name": "Fillet1", "type": "kFilletFeatureObject", "filletType": "kEdgeFillet", "automaticEdgeChain": "true", "smoothRadiusTransition": "false", "rollAlongSharpEdges": "false", "rollingBallWherePossible": "true", "preserveAllFeatures": "false", "sets": "1", "radius1": "1 mm", "radius1Param": "d5", "allFillets1": "false", "allRounds1": "false", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["plane plane (1, 0, 0) 0", "edge circle (-10, 5, 5) 3", "edge circle (10, 5, 5) 3"]
+}

@@ -1,0 +1,15 @@
+{
+  "file": "corpus\\generated\\hole\\tapped.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "10 mm", "taper": "0 deg"},
+    {"name": "Hole1", "type": "kHoleFeatureObject", "holeType": "kDrilledHole", "extent": "kThroughAllExtent", "direction": "kPositiveExtentDirection", "flatBottom": "true", "placement": "kSketchPlacementType", "centers": "1", "tapped": "true", "threadType": "ANSI Metric M Profile", "thread": "M6x1", "threadClass": "6H", "rightHanded": "true", "fullThreadDepth": "true"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 1, "dimensions": 0, "constraints": 0}
+  ]
+}

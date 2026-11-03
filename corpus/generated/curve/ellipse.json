@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\curve\\ellipse.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 0, "constraints": 1, "curves": "ellipse center 10 20 major 1 0 radii 15 5"}
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "file": "corpus\\generated\\asmparts\\box.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "5 mm", "value": 0.5, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "5 mm", "taper": "0 deg", "profile": "+line (0, 0) (0, 10), line (0, 0) (20, 0), line (0, 10) (20, 10), line (20, 0) (20, 10)", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12}
+  ]
+}

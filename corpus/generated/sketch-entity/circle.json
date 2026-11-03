@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\sketch-entity\\circle.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 0, "constraints": 1}
+  ]
+}

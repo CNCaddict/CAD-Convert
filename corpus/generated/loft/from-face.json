@@ -1,0 +1,24 @@
+{
+  "file": "corpus\\generated\\loft\\from-face.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "20 mm", "value": 2, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "40 mm", "value": 4, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "0.000000 ul", "value": 0, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "90.000000 deg", "value": 1.5707963267948966, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d5", "expression": "0.000000 ul", "value": 0, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d6", "expression": "90.000000 deg", "value": 1.5707963267948966, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "20 mm", "taper": "0 deg", "profile": "+line (-20, -20) (-20, 20), line (-20, -20) (20, -20), line (-20, 20) (20, 20), line (20, -20) (20, 20)", "health": "kUpToDateHealth"},
+    {"name": "Loft1", "type": "kLoftFeatureObject", "operation": "kJoinOperation", "loftType": "kRegularLoft", "closed": "false", "mergeTangentFaces": "false", "firstCondition": "kFreeLoftCondition", "lastCondition": "kFreeLoftCondition", "firstReversed": "false", "lastReversed": "false", "sections": "Sketch2: +line (-20, -20) (-20, 20), line (-20, -20) (20, -20), line (-20, 20) (20, 20), line (20, -20) (20, 20) | Sketch3: +line (-10, -10) (-10, 10), line (-10, -10) (10, -10), line (-10, 10) (10, 10), line (10, -10) (10, 10)", "rails": "0", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 8, "dimensions": 0, "constraints": 0},
+    {"name": "Sketch3", "entities": 8, "dimensions": 0, "constraints": 12}
+  ],
+  "imates": [
+    
+  ]
+}

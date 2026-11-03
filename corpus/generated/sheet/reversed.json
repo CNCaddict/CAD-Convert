@@ -1,0 +1,21 @@
+{
+  "file": "corpus\\generated\\sheet\\reversed.ipt",
+  "parameters": [
+    {"name": "Thickness", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "BendRadius", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "BendReliefWidth", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "BendReliefDepth", "expression": "0.250 mm", "value": 0.025, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "CornerReliefSize", "expression": "2.000 mm", "value": 0.2, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "MinimumRemnant", "expression": "1.000 mm", "value": 0.1, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "TransitionRadius", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "JacobiRadiusSize", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "GapSize", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"},
+    {"name": "d0", "expression": "0.500 mm", "value": 0.05, "units": "mm", "kind": "kReferenceParameterObject"}
+  ],
+  "features": [
+    {"name": "Face1", "type": "kFaceFeatureObject", "operation": "kNewBodyOperation", "direction": "kNegativeExtentDirection", "sketch": "Sketch1", "profile": "+line (-20, -20) (-20, 20), line (-20, -20) (20, -20), line (-20, 20) (20, 20), line (20, -20) (20, 20)", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12}
+  ]
+}

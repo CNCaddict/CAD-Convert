@@ -1,0 +1,11 @@
+{
+  "file": "corpus\\generated\\revolve\\line-axis.ipt",
+  "parameters": [
+  ],
+  "features": [
+    {"name": "Revolution1", "type": "kRevolveFeatureObject", "operation": "kNewBodyOperation", "extent": "kFullSweepExtent", "axis": "kSketchLineObject", "sketch": "Sketch1", "twoDirectional": "false"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 11, "dimensions": 0, "constraints": 14}
+  ]
+}

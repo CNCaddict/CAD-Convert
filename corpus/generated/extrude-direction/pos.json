@@ -1,0 +1,14 @@
+{
+  "file": "corpus\\generated\\extrude-direction\\pos.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10.000 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 1, "constraints": 1}
+  ]
+}

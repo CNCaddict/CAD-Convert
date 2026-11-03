@@ -1,0 +1,13 @@
+{
+  "file": "corpus\\generated\\curve\\text-rotated.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 1, "dimensions": 0, "constraints": 0, "curves": "text 'ABC' 10 30 box 30 10 rotation 0"}
+  ],
+  "imates": [
+    
+  ]
+}

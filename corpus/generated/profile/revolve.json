@@ -1,0 +1,11 @@
+{
+  "file": "corpus\\generated\\profile\\revolve.ipt",
+  "parameters": [
+  ],
+  "features": [
+    {"name": "Revolution1", "type": "kRevolveFeatureObject", "operation": "kNewBodyOperation", "extent": "kFullSweepExtent", "axis": "kSketchLineObject", "sketch": "Sketch1", "twoDirectional": "false", "profile": "+line (50, -20) (50, 20), line (50, -20) (90, -20), line (50, 20) (90, 20), line (90, -20) (90, 20); -circle (70, 0) 5", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 11, "dimensions": 0, "constraints": 13}
+  ]
+}

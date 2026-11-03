@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\curve\\ellipse-rot.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 0, "constraints": 1, "curves": "ellipse center 10 20 major 0.6 0.8 radii 15 5"}
+  ]
+}

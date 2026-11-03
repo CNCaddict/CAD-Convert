@@ -1,0 +1,13 @@
+{
+  "file": "corpus\\generated\\profile\\all.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "5 mm", "value": 0.5, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "5 mm", "taper": "0 deg", "profile": "+circle (35, 0) 5; +line (-20, -20) (-20, 20), line (-20, -20) (20, -20), line (-20, 20) (20, 20), line (20, -20) (20, 20); -circle (0, 0) 5", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 12, "dimensions": 0, "constraints": 14}
+  ]
+}

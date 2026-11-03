@@ -1,0 +1,10 @@
+{
+  "file": "image-rot\\curve\\image.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 1, "curves": "image name 'Image1' width 1.058333 height 0.529167 position 10 20 rotation ? link ? visible True file ?"}
+  ]
+}

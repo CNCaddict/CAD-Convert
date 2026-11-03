@@ -1,0 +1,20 @@
+{
+  "file": "corpus\\generated\\pattern-circ\\lock.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "4 ul", "value": 4, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d5", "expression": "90 deg", "value": 1.5707963267948966, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "10 mm", "taper": "0 deg", "health": "kUpToDateHealth"},
+    {"name": "Extrusion2", "type": "kExtrudeFeatureObject", "operation": "kCutOperation", "extent": "kThroughAllExtent", "direction": "kSymmetricExtentDirection", "taper": "0 deg", "health": "kUpToDateHealth"},
+    {"name": "Circular Pattern1", "type": "kCircularPatternFeatureObject", "axis": "line through (0, 0, -10) along (0, 0, 1)", "axisType": "kWorkAxisObject", "naturalAxis": "true", "count": "4 ul", "countParam": "d4", "angle": "90 deg", "angleParam": "d5", "fitWithinAngle": "true", "midPlane": "false", "lockRotation": "true", "positioning": "kFittedPositioningMethod", "ofBody": "false", "parents": "Extrusion2", "computeType": "kIdenticalCompute", "elements": "4", "transforms": "1: 1 0 0 0, 0 1 0 0, 0 0 1 0; 2: 1 0 0 6.339745962, 0 1 0 -3.660254038, 0 0 1 0; 3: 1 0 0 13.660254038, 0 1 0 -3.660254038, 0 0 1 0; 4: 1 0 0 20, 0 1 0 0, 0 0 1 0", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "picked": ["axis line through (0, 0, -10) along (0, 0, 1)"]
+}

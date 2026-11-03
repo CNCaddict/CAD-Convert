@@ -1,0 +1,10 @@
+{
+  "file": "corpus\\generated\\curve\\smooth.ipt",
+  "parameters": [
+  ],
+  "features": [
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 6, "dimensions": 0, "constraints": 5, "curves": "spline fit 0 0 10 10 20 0 30 15 40 5 method kSmoothSplineFit order 5 closed false rational false periodic false poles 0 0 9.163123 55.864911 23.822325 -80.939998 27.511803 64.762876 40 5 knots 0 0 0 0 0 1 1 1 1 1"}
+  ]
+}
