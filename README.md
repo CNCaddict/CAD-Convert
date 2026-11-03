@@ -41,18 +41,18 @@ checked yet; they may convert, or may not.
 | Inventor | In FreeCAD |
 |---|---|
 | Parameters, formulas, units | A parameter table, formulas as expressions |
-| Sketches, constraints, dimensions | Sketcher sketches, kept where they still solve exactly as Inventor has them |
+| Sketches, constraints, dimensions | Sketcher sketches, kept where they still solve exactly as Inventor has them, attached to the face or work plane they were drawn on so they move with it |
 | Extrude (one side, two, symmetric, tapered, to next, to a face or work plane, from-to), revolve | Pad, Pocket, Revolution, Groove |
 | Sweep along a path or guide rail | AdditivePipe, SubtractivePipe |
 | Hole: drilled, counterbore, countersink, spot face | Hole, at the tap drill size where threaded (threads are cosmetic in Inventor's solid too) |
 | Fillet, chamfer | Fillet and Chamfer; where FreeCAD's own refuses, a round or chamfer built from a sketch profile |
-| Mirror, rectangular and circular patterns | Mirrored, LinearPattern, PolarPattern |
-| Shell (faces removed, inward or outward), loft (with centerline), sheet metal plates and flanges | Thickness, Loft or multi-section Pipe, Pads |
+| Mirror, rectangular and circular patterns (including mid-plane) | Mirrored, LinearPattern, PolarPattern |
+| Shell (faces removed, inward or outward), loft (with centerline, or to a point), sheet metal plates and flanges | Thickness, Loft or multi-section Pipe, Pads |
 | End of Part, suppressed and failing features | The body's Tip; left out, as in Inventor's solid |
 | Assembly constraints and joints | FreeCAD Assembly joints |
 
-Not yet: sweep taper and twist, loft rails, shells to both sides, imported bodies' own shape, surface features,
-sketch-driven patterns, 3D sketches, and links from sketches to the faces they sit on.
+Not yet: sweep taper and twist, loft rails and closed lofts, shells to both sides, imported bodies' own shape, surface
+features, sketch-driven patterns, 3D sketches, and work planes tied to the geometry that defines them.
 
 ## How it works
 
@@ -83,7 +83,7 @@ November 2026, on 141 real parts and 31 assemblies from one project, and on a li
 | | |
 |---|---|
 | Real parts | **63 of 141** rebuild with history and match Inventor's solid. About 50 are imported or vendor bodies with no history to carry; they get Inventor's exact solid |
-| Test library | **151 of 231** small Inventor parts match; 58 are sketches only |
+| Test library | **156 of 231** small Inventor parts match; 58 are sketches only |
 | Changing a parameter afterwards | 84 of 107 sampled dimensions, changed by 5%, give the same shape as Inventor does |
 | Assembly joints | 281 of 345 carried across 31 assemblies, nothing moved |
 

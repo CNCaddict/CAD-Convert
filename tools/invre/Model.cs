@@ -57,7 +57,30 @@ namespace InvRe
                     Q(p.Name), Q(p.Unit), Q(p.Formula), N(p.Value), Q(p.Shown)));
 
             List<string> sketches = new List<string>();
-            foreach (Sketches.SketchData s in Sketches.ReadAll(t)) sketches.Add(SketchJson(s));
+            Segment brepForSketches = segments.Find(s => string.Equals(s.Name, "PmBRepSegment", StringComparison.OrdinalIgnoreCase));
+            Dictionary<int, Naming.Resolved> sketchFaceNames = null;
+            Dictionary<int, string> browser = Sketches.BrowserNames(t);
+            foreach (Sketches.SketchData s in Sketches.ReadAll(t))
+            {
+                // What it was drawn on: an origin plane (by its role), a work plane (where it is) or a face (its surface).
+                string on = "null";
+                int target = Sketches.SketchOn(t, s.Node);
+                Node tn = t.At(target);
+                if (tn != null && tn.TypeName == "Plane")
+                {
+                    string name;
+                    browser.TryGetValue(target, out name);
+                    Features.Plane wp = Features.WorkPlane(t, target);
+                    on = string.Format("{{\"kind\": \"plane\", \"name\": {0}{1}}}", Q(name),
+                        wp == null ? "" : ", \"origin\": " + Vec(ToMm(wp.Origin)) + ", \"normal\": " + Vec(wp.Normal));
+                }
+                else if (tn != null && tn.TypeName == "FaceItem")
+                {
+                    if (sketchFaceNames == null) sketchFaceNames = brepForSketches == null ? new Dictionary<int, Naming.Resolved>() : Naming.Resolve(t, brepForSketches.Data);
+                    on = "{\"kind\": \"face\", \"face\": " + EdgesJson(new List<int> { target }, sketchFaceNames) + "}";
+                }
+                sketches.Add(SketchJson(s, on));
+            }
 
             return "{\n\"name\": " + Q(Path.GetFileNameWithoutExtension(file.Split('*')[file.Split('*').Length - 1]))
                 + ",\n\"file\": " + Q(file)
@@ -68,7 +91,7 @@ namespace InvRe
                 + "\n}\n";
         }
 
-        static string SketchJson(Sketches.SketchData s)
+        static string SketchJson(Sketches.SketchData s, string on)
         {
             List<string> curves = new List<string>(), rules = new List<string>();
             foreach (Sketches.SketchCurve c in s.Curves)
@@ -79,8 +102,8 @@ namespace InvRe
                 rules.Add(string.Format("{{\"kind\": {0}, \"items\": {1}, \"param\": {2}}}", Q(r.Kind), Ids(r.Items), Q(r.ParamName)));
             double[] m = s.Placement == null ? null : (double[])s.Placement.Clone();
             if (m != null) { m[3] *= Mm; m[7] *= Mm; m[11] *= Mm; }
-            return string.Format("{{\"id\": {0}, \"name\": {1}, \"matrix\": {2},\n   \"curves\": [\n    {3}\n   ],\n   \"rules\": [\n    {4}\n   ]}}",
-                s.Node, Q(s.Name), Vec(m), string.Join(",\n    ", curves.ToArray()), string.Join(",\n    ", rules.ToArray()));
+            return string.Format("{{\"id\": {0}, \"name\": {1}, \"matrix\": {2}, \"on\": {5},\n   \"curves\": [\n    {3}\n   ],\n   \"rules\": [\n    {4}\n   ]}}",
+                s.Node, Q(s.Name), Vec(m), string.Join(",\n    ", curves.ToArray()), string.Join(",\n    ", rules.ToArray()), on);
         }
 
         static string LoopsJson(NodeTable t, int profile, int sketch, Dictionary<string, int> items)
@@ -93,6 +116,18 @@ namespace InvRe
                 loops.Add(Ids(l.Entities));
             }
             return loops.Count == 0 ? "null" : "[" + string.Join(", ", loops.ToArray()) + "]";
+        }
+
+        // For each loop, whether it adds material (Profiles.AddsMaterial) rather than being a hole. Usually a loop inside
+        // another is a hole, but a profile made without combining regions adds each loop in its own right (the generated
+        // profile no-combine part: a circle inside a square that fills rather than cuts).
+        static string AddsJson(NodeTable t, int profile, int sketch, Dictionary<string, int> items)
+        {
+            if (profile < 0 || sketch < 0) return "null";
+            List<string> adds = new List<string>();
+            foreach (Profiles.Loop l in Profiles.Loops(t, profile, sketch, items))
+                adds.Add(Profiles.AddsMaterial(t, l) ? "true" : "false");
+            return "[" + string.Join(", ", adds.ToArray()) + "]";
         }
 
         // Each loop's outline as Inventor trimmed it: for profiles bounded by curves that cross rather than meet.
@@ -277,7 +312,7 @@ namespace InvRe
                     e.SketchNode, LoopsJson(t, e.ProfileNode, e.SketchNode, items), Q(Op(e.Operation)), Q(Extent(e.Extent)), Q(Dir(e.Direction)), Vec(e.Axis),
                     Q(e.DistanceParam), N(e.DistanceCm * Mm), Q(e.ExtentTwo == null ? null : Extent(e.ExtentTwo)), Q(e.DistanceTwoParam), N(e.DistanceTwoCm * Mm),
                     Q(e.Tapered ? e.TaperParam : null), Q(e.Tapered ? e.Taper : null), to, Q(e.To));
-                json[e.Index] += ", \"wires\": " + WiresJson(t, e.ProfileNode, e.SketchNode, items);
+                json[e.Index] += ", \"wires\": " + WiresJson(t, e.ProfileNode, e.SketchNode, items) + ", \"adds\": " + AddsJson(t, e.ProfileNode, e.SketchNode, items);
                 if (e.ToCylinder != null)
                     json[e.Index] += ", \"toCylinder\": {\"origin\": " + Vec(ToMm(e.ToCylinder.Origin)) + ", \"axis\": " + Vec(e.ToCylinder.Axis) + ", \"r\": " + N(e.ToCylinder.RadiusU * Mm) + "}";
                 if (e.FromWork != null) json[e.Index] += ", \"fromPlane\": " + planeJson(e.FromWork, true);

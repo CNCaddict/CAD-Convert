@@ -282,6 +282,30 @@ namespace InvRe
             return pts;
         }
 
+        // What the sketch was drawn on: the node a placement cross-refs at +0x34 (Sketch2DPlacementPlane 3D64CCF0 for a
+        // plane, origin or work plane; Sketch2DPlacement 90874D23 for a face, then a FaceItem). The placement is the one
+        // that cross-refs the sketch's own Transformation at +0x22. -1 if none is found.
+        public static int SketchOn(NodeTable t, int sketch)
+        {
+            Node sk = t.At(sketch);
+            if (sk == null || sk.Data == null) return -1;
+            int transform = -1;
+            for (int q = 0x1A + Shift(sk.Data); q + 4 <= sk.Data.Length && transform < 0; q++)
+            {
+                Node tr = t.At(XRef(sk.Data, q));
+                if (tr != null && tr.TypeName == "Transformation") transform = tr.Index;
+            }
+            if (transform < 0) return -1;
+            foreach (Node n in t.Nodes)
+            {
+                if (n.Type == null || n.Data == null || (n.Type.Key != 0x3D64CCF0 && n.Type.Key != 0x90874D23)) continue;
+                int s = Shift(n.Data);
+                if (n.Data.Length < 0x38 + s || XRef(n.Data, 0x22 + s) != transform) continue;
+                return XRef(n.Data, 0x34 + s);
+            }
+            return -1;
+        }
+
         // The sketch's placement: model = M * (x, y, 0, 1), M row-major 4x4. Transformation (90874D18): u32 at +0x22;
         // its low 16 bits mark elements that are 1, its high 16 bits elements that are 0 (both: -1); every other
         // element is an f64, stored in order after it. Found as the first Transformation the Sketch2D cross-refs.

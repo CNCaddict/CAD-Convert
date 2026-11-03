@@ -675,7 +675,7 @@
   "bad": [],
   "kind": "differs",
   "surface_far": null,
-  "volume_off": 0.2861374788241468
+  "volume_off": 0.2861374788241479
  },
  "loft-cut": {
   "bad": [],
@@ -696,12 +696,10 @@
   "volume_off": 1.2407192357404348e-16
  },
  "loft-point": {
-  "bad": [
-   "Loft1: skipped"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": null
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.1712586625457608e-16
  },
  "loft-rail": {
   "bad": [
@@ -713,11 +711,11 @@
  },
  "loft-tangent-plane": {
   "bad": [
-   "Loft1: skipped"
+   "Loft1: approximate"
   ],
   "kind": "differs",
   "surface_far": null,
-  "volume_off": null
+  "volume_off": 0.6773171272264512
  },
  "loft-three": {
   "bad": [],
@@ -810,11 +808,9 @@
   "volume_off": 3.5212277644113935e-16
  },
  "pattern-circ-mid": {
-  "bad": [
-   "Circular Pattern1: approximate"
-  ],
-  "kind": "differs",
-  "surface_far": 0.13157894736842105,
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
   "volume_off": 3.5212277644113935e-16
  },
  "pattern-circ-reversed": {
@@ -867,8 +863,8 @@
  },
  "pattern-rect-mid": {
   "bad": [],
-  "kind": "differs",
-  "surface_far": 0.1267605633802817,
+  "kind": "match",
+  "surface_far": 0.0,
   "volume_off": 3.4929047611790486e-16
  },
  "pattern-rect-orient": {
@@ -921,9 +917,9 @@
  },
  "profile-no-combine": {
   "bad": [],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.046790559017545454
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
  },
  "profile-no-hole": {
   "bad": [],
@@ -975,9 +971,9 @@
  },
  "revolve-cut": {
   "bad": [],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.07101656471697136
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1803225894329003e-16
  },
  "revolve-full": {
   "bad": [],
@@ -1010,7 +1006,7 @@
   ],
   "kind": "differs",
   "surface_far": null,
-  "volume_off": 0.11429280486881244
+  "volume_off": 0.11429280486881298
  },
  "sheet-corner": {
   "bad": [

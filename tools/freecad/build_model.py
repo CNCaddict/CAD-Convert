@@ -156,9 +156,104 @@ def matrix_of(m):
     return App.Matrix(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15])
 
 
-def attach(sk, body, m):
-    """On the origin plane the sketch lies parallel to, with the offset that puts it where Inventor has it."""
-    place_sketch(sk, body, App.Placement(matrix_of(m)))
+def attach(sk, body, m, on=None):
+    """On the origin plane the sketch lies parallel to, with the offset that puts it where Inventor has it. What
+    Inventor drew it on (a face of the solid so far, or a work plane) is noted, and reattach_all attaches it there once
+    the whole part is built: a feature can still change afterwards (a retry without face merging renumbers its faces),
+    and a sketch on one of its faces would jump (on some real parts the volume nearly doubled)."""
+    want = App.Placement(matrix_of(m))
+    place_sketch(sk, body, want)
+    work = on and on.get("kind") == "plane" and on.get("origin") and on.get("name") not in ("XY Plane", "XZ Plane", "YZ Plane")
+    if on and (on.get("kind") == "face" or work):
+        to_reattach.append((sk, body, body.Tip, want, on))
+    return "origin plane"
+
+
+work_planes = {}   # (body name, work plane name) -> its datum plane
+to_reattach = []   # (sketch, body, the feature before it, where it goes, what it was drawn on)
+
+
+def alive(o):
+    """Still in the document: reading anything of a deleted object raises."""
+    try:
+        return o is not None and o.Document is not None
+    except ReferenceError:
+        return False
+
+
+def reattach_all(doc, bodies):
+    """Each noted sketch on its face or work plane, now the part is built; kept only if the part comes out the same,
+    else they all go back on their origin planes. Returns what each got, by sketch name."""
+    if not to_reattach:
+        return None
+    bodies = [b for b in bodies if alive(b)]
+    before = [b.Shape.Volume if not b.Shape.isNull() else 0.0 for b in bodies]
+    got = {}
+    for sk, body, tip, want, on in to_reattach:
+        # Not if the sketch, or the feature it would hang on, was taken back.
+        if not alive(sk) or not alive(body) or (on["kind"] == "face" and not alive(tip)):
+            continue
+        kind = attach_to(sk, body, want, on, tip)
+        if kind:
+            got[sk.Name] = kind
+    if not got:
+        return {}
+    doc.recompute()
+    after = [b.Shape.Volume if not b.Shape.isNull() else 0.0 for b in bodies]
+    # Within 10 parts per million: a plain recompute of an unchanged real part already moves it by about one (0.07 mm³
+    # of 68,586), while a sketch that jumped to the wrong face moves it by percent.
+    same = all(abs(a - b) <= 1e-5 * max(1.0, abs(b)) for a, b in zip(after, before)) and all(o.isValid() for b in bodies for o in b.Group)
+    if not same:
+        for sk, body, tip, want, on in to_reattach:
+            if alive(sk) and sk.Name in got:
+                place_sketch(sk, body, want)
+        doc.recompute()
+        return {}
+    return got
+
+
+def attach_to(sk, body, want, on, tip=None):
+    """Attached to the face or work plane, if found and if the sketch then lands exactly where Inventor has it."""
+    if on["kind"] == "face":
+        tip = tip if tip is not None else body.Tip
+        refs = [a for alt in on.get("face") or [] for a in alt if a.get("kind") == "plane"]
+        if tip is None or tip.Shape.isNull() or not refs:
+            return None
+        found = [(i, f) for i, f in enumerate(tip.Shape.Faces) if isinstance(f.Surface, Part.Plane) and same_surface(refs[0], f)]
+        if not found:
+            return None
+        # Of the faces on that plane, the one nearest the sketch's origin.
+        i, _ = min(found, key=lambda c: c[1].distToShape(Part.Vertex(want.Base))[0])
+        support, got = [(tip, "Face%d" % (i + 1))], "face"
+    elif on["kind"] == "plane" and on.get("origin") and on.get("normal") and on.get("name") not in ("XY Plane", "XZ Plane", "YZ Plane"):
+        key = (body.Name, on.get("name"))
+        d = work_planes.get(key)
+        if not alive(d):
+            d = body.newObject("PartDesign::Plane", "Plane")
+            d.Label = on.get("name") or "Work Plane"
+            d.MapMode = "Deactivated"
+            d.Placement = App.Placement(V(*on["origin"]), App.Rotation(V(0, 0, 1), V(*on["normal"])))
+            d.Visibility = False
+            work_planes[key] = d
+        support, got = [(d, "")], "work plane"
+    else:
+        return None
+    sk.AttachmentSupport = support
+    sk.MapMode = "FlatFace"
+    sk.AttachmentOffset = App.Placement()
+    try:
+        sk.positionBySupport()
+        sk.AttachmentOffset = sk.Placement.inverse().multiply(want)
+        sk.positionBySupport()
+        ok = sk.Placement.isSame(want, 1e-7)
+    except Exception:
+        ok = False
+    if not ok:
+        sk.AttachmentSupport = []
+        sk.MapMode = "Deactivated"
+        sk.AttachmentOffset = App.Placement()
+        return None
+    return got
 
 
 def place_sketch(sk, body, want):
@@ -290,6 +385,90 @@ def touching_loops(f):
     return None
 
 
+def loop_box(data, loop):
+    """A loop's box in sketch coordinates, from its curves' points (a circle or arc as its whole circle); None if unknown."""
+    curves = {c["id"]: c for c in data["curves"]}
+    xs, ys = [], []
+    def point(i):
+        c = curves.get(i)
+        if c is not None and c["kind"] == "point":
+            xs.append(c["x"])
+            ys.append(c["y"])
+            return c
+        return None
+    for i in loop:
+        c = curves.get(i)
+        if c is None:
+            return None
+        if c["kind"] in ("circle", "arc"):
+            p = curves.get(c["center"])
+            if p is None:
+                return None
+            xs.extend((p["x"] - c["r"], p["x"] + c["r"]))
+            ys.extend((p["y"] - c["r"], p["y"] + c["r"]))
+        else:
+            for k in ("start", "end"):
+                point(c.get(k))
+            for q in c.get("poles") or []:
+                xs.append(q[0])
+                ys.append(q[1])
+    return (min(xs), min(ys), max(xs), max(ys)) if xs else None
+
+
+def outline_points(wire, inverse):
+    """A loop's outline from Inventor's trimmed wire, in order, as sketch-plane points (arcs sampled); None if unknown."""
+    pts = []
+    for e in wire:
+        if e.get("kind") == "line" and e.get("a") and e.get("b"):
+            pts.append(inverse.multVec(V(*e["a"])))
+        elif e.get("kind") == "circle" and e.get("a") and e.get("from") and e.get("to"):
+            c, a, b = inverse.multVec(V(*e["a"])), inverse.multVec(V(*e["from"])), inverse.multVec(V(*e["to"]))
+            a0, a1 = math.atan2(a.y - c.y, a.x - c.x), math.atan2(b.y - c.y, b.x - c.x)
+            n = inverse.Rotation.multVec(V(*e["b"]))
+            if (n.z > 0) == bool(e.get("rev")):
+                a0, a1 = a1, a0
+            if a1 <= a0:
+                a1 += 2 * math.pi
+            for k in range(24):
+                t = a0 + (a1 - a0) * k / 24.0
+                pts.append(V(c.x + e["r"] * math.cos(t), c.y + e["r"] * math.sin(t), 0))
+        else:
+            return None
+    return pts if len(pts) >= 3 else None
+
+
+def in_polygon(p, poly):
+    inside = False
+    for k in range(len(poly)):
+        a, b = poly[k], poly[(k + 1) % len(poly)]
+        if (a.y > p.y) != (b.y > p.y) and p.x < a.x + (p.y - a.y) * (b.x - a.x) / (b.y - a.y):
+            inside = not inside
+    return inside
+
+
+def filled_inside(f, data):
+    """A profile whose loops each add material (made without combining regions): a loop inside another adds nothing
+    more, and FreeCAD would take it for a hole, so it goes. Profiles with holes are left as they are. "Inside" by the
+    loops' real outlines: two separate regions of a real part's cut can have one's box within the other's."""
+    adds, loops, wires = f.get("adds"), f.get("loops"), f.get("wires")
+    if not adds or not loops or len(adds) != len(loops) or sum(adds) < 2 or not wires or len(wires) != len(loops) or not data.get("matrix"):
+        return f
+    inverse = App.Placement(matrix_of(data["matrix"])).inverse()
+    outlines = [outline_points(w, inverse) for w in wires]
+    def inside(i, j):
+        if outlines[i] is None or outlines[j] is None:
+            return False
+        return all(in_polygon(p, outlines[j]) for p in outlines[i][::max(1, len(outlines[i]) // 8)])
+    drop = [i for i in range(len(loops)) if adds[i] and any(adds[j] and inside(i, j) for j in range(len(loops)) if j != i)]
+    if not drop:
+        return f
+    keep = [i for i in range(len(loops)) if i not in drop]
+    out = dict(f, loops=[loops[i] for i in keep], adds=[adds[i] for i in keep])
+    if f.get("wires") and len(f["wires"]) == len(loops):
+        out["wires"] = [f["wires"][i] for i in keep]
+    return out
+
+
 def all_closed(sk):
     wires = sk.Shape.Wires if not sk.Shape.isNull() else []
     return len(wires) > 0 and all(w.isClosed() for w in wires)
@@ -329,7 +508,7 @@ class SketchBuilder:
         self.sk = body.newObject("Sketcher::SketchObject", "Sketch")
         self.sk.Label = label
         if data["matrix"]:
-            attach(self.sk, body, data["matrix"])
+            self.status["on"] = attach(self.sk, body, data["matrix"], data.get("on"))
         for r in data["rules"]:
             r.pop("done", None)
         self.geometry()
@@ -918,6 +1097,7 @@ class Builder:
     def sketch_for(self, f):
         """The sketch with only the profile's curves solid: FreeCAD extrudes every closed loop a sketch has."""
         data = self.sketches[f["sketch"]]
+        f = filled_inside(f, data)
         keep = None
         if f.get("loops"):
             keep = set(x for loop in f["loops"] for x in loop)
@@ -1406,8 +1586,8 @@ class Builder:
         conditions aren't carried."""
         op = f["op"]
         sections = f.get("sections") or []
-        if len(sections) < 2 or any(s is None or s.get("loops") is None for s in sections):
-            st["status"], st["why"] = "skipped", "a loft through a point, or a section not decoded, isn't carried yet"
+        if len(sections) < 2 or any(s is None or (s.get("loops") is None and s.get("point") is None) for s in sections):
+            st["status"], st["why"] = "skipped", "a section wasn't decoded"
             return None
         if op in ("new",) or self.body is None:
             if op == "cut":
@@ -1417,7 +1597,14 @@ class Builder:
         if op in ("intersect", "surface"):
             st["status"], st["why"] = "skipped", op + " lofts aren't carried yet"
             return None
-        sketches = [self.sketch_for(dict(s, name=f["name"]))[0] for s in sections]
+        def section(s):
+            if s.get("point") is None:
+                return self.sketch_for(dict(s, name=f["name"]))[0]
+            # A sketch point (a loft to a point): FreeCAD takes a sketch whose only solid geometry is that point, as a
+            # Hole takes its centres.
+            data = self.sketches[s["sketch"]]
+            return SketchBuilder(self.doc, self.params, data, self.body, set(), "%s (%s)" % (data["name"] or "Sketch", f["name"]), [s["point"]]).sk
+        sketches = [section(s) for s in sections]
         cut = op == "cut"
         line = f.get("centerline") if f.get("loftType") == "kLoftWithCenterline" else None
         if line is not None:
@@ -1448,7 +1635,8 @@ class Builder:
             why.append("its %d rail(s) aren't carried" % len(f["rails"]))
         for end in ("first", "last"):
             c = (f.get(end) or {}).get("condition")
-            if c and c != "kFreeLoftCondition":
+            # A sharp point is what FreeCAD's loft makes at a point anyway.
+            if c and c not in ("kFreeLoftCondition", "kSharpPointLoftCondition"):
                 why.append("the %s section's %s isn't carried" % (end, c[1:].replace("LoftCondition", "").lower()))
         if why:
             st["status"], st["why"] = "approximate", "; ".join(why)
@@ -2035,6 +2223,8 @@ class Builder:
                 steps.append(step)
             o.Transformations = steps
             return o
+        if kind in ("circular", "rectangular") and f["mid"][0] and not f["ofBody"] and f["n"][0] and f["n"][0] > 2:
+            return self.both_ways(f, originals, st)
         o = self.body.newObject(TRANSFORM_KINDS[kind], "Feature")
         o.Label = f["name"] or o.Name
         if f["ofBody"]:
@@ -2044,6 +2234,41 @@ class Builder:
             self.transforms[o.Name] = f
         self.configure_transform(o, f, st)
         return o
+
+    def both_ways(self, f, originals, st):
+        """A mid-plane pattern: Inventor puts the copies at 0, +s, -s, +2s, -2s... from the original (its own report on
+        the generated pattern-circ-mid and pattern-rect-mid parts). FreeCAD's patterns go one way, so it is two: one
+        ahead over the copies on the plus side and one back over the rest, both copying the same features. Their counts
+        and spacing are fixed numbers, not tied to Inventor's parameters."""
+        kind, n = f["type"], f["n"][0]
+        if kind == "circular":
+            angle = f["angle"]
+            s = angle if f["incremental"] else (angle / n if abs(abs(angle) - 360) < 1e-6 else angle / (n - 1))
+            side = dict(f, incremental=True, angle=s, angleParam=None)
+        else:
+            s = f["step"][0] / (n - 1) if f["fitted"][0] else f["step"][0]
+            side = dict(f, fitted=[False] + list(f["fitted"][1:]), step=[s] + list(f["step"][1:]), spacingParam=[None] + list(f["spacingParam"][1:]))
+        side["countParam"] = [None] + list(f["countParam"][1:])
+        side["mid"] = [False] + list(f["mid"][1:])
+        ahead, back = 1 + n // 2, 1 + (n - 1) // 2
+        made = None
+        for count, reverse, label in ((ahead, False, f["name"]), (back, True, "%s (other side)" % f["name"])):
+            g = dict(side, n=[count] + list(f["n"][1:]))
+            if reverse:
+                if kind == "circular":
+                    g["reversed"] = not f["reversed"]
+                else:
+                    g["dir1"] = [-v for v in f["dir1"]]
+            o = self.body.newObject(TRANSFORM_KINDS[kind], "Feature")
+            o.Label = label or o.Name
+            o.Originals = originals
+            self.transforms[o.Name] = f
+            self.configure_transform(o, g, st)
+            self.body.Tip = o
+            self.doc.recompute()
+            made = o
+        st["note"] = "mid-plane: two patterns, one each way, with fixed counts and spacing"
+        return made
 
     def configure_transform(self, o, f, st):
         kind = f["type"]
@@ -2069,7 +2294,8 @@ class Builder:
                 o.Mode = "Extent"
                 o.Angle = f["angle"]
                 self.expression(o, "Angle", f.get("angleParam"))
-            if f["mid"][0]:
+            # (Two-way patterns are made by both_ways; with two copies, 0 and +s, mid-plane is one-sided anyway.)
+            if f["mid"][0] and f["n"][0] and f["n"][0] > 2:
                 st["status"], st["why"] = "approximate", "a mid-plane pattern was made one-sided"
 
     def linear_side(self, o, f, k, suffix):
@@ -2705,6 +2931,29 @@ def surface_apart(a, b):
     return (far / seen if seen else 1.0), worst
 
 
+def hollows_cut(shape):
+    """Inventor's solid as read from its STEP, with any sealed hollow that touches the outside taken out. Inventor lets
+    a hollow touch the outer skin along a line (the generated revolve-cut part: a ring cut inside a block, its rim on the
+    top and bottom); STEP's readers then give the hollow back as a solid of its own, inside out, and the volumes add."""
+    solids = shape.Solids
+    if len(solids) < 2:
+        return shape
+    hollow = [s for s in solids if s.Shells and s.Shells[0].Orientation == "Reversed"]
+    whole = [s for s in solids if not any(s.isSame(h) for h in hollow)]
+    if not hollow or not whole:
+        return shape
+    out = []
+    for w in whole:
+        inside = [h for h in hollow if w.BoundBox.isInside(h.BoundBox)]
+        for h in inside:
+            try:
+                w = w.cut(Part.Solid(h.Shells[0].reversed()))
+            except Exception:
+                return shape
+        out.append(w)
+    return out[0] if len(out) == 1 else Part.makeCompound(out)
+
+
 def frozen_solid(doc, builder, result):
     """Inventor's exact solid, read from the STEP written beside this. It is the truth the rebuild is measured against;
     where the rebuild falls short it goes in the file too and is what shows, with the history kept beside it."""
@@ -2712,7 +2961,7 @@ def frozen_solid(doc, builder, result):
     if not path or not os.path.exists(path):
         return
     try:
-        shape = Part.read(path)
+        shape = hollows_cut(Part.read(path))
     except Exception as ex:
         report["step"] = {"error": str(ex)[:200]}
         return
@@ -2786,6 +3035,16 @@ def main():
     for f in ([] if solid_only else model["features"]):
         builder.run(f)
     builder.end_of_part()
+    # Sketches onto the faces and work planes Inventor drew them on, now nothing more will change under them.
+    got = reattach_all(doc, builder.bodies)
+    for s in report["sketches"]:
+        obj = doc.getObjectsByLabel(s["name"])
+        if got and obj and obj[0].Name in got:
+            s["on"] = got[obj[0].Name]
+    if got:
+        report["sketches_attached"] = {k: list(got.values()).count(k) for k in ("face", "work plane")}
+    elif got is not None:
+        report["sketches_attached"] = "kept on origin planes: attached, the part came out differently"
     # Sketches no feature used still belong in the file.
     for s in ([] if solid_only else model["sketches"]):
         if s["id"] not in builder.used:

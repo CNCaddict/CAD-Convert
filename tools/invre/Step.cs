@@ -731,6 +731,67 @@ namespace InvRe
             return Add("ADVANCED_FACE('',(" + string.Join(",", bounds.ToArray()) + "),#" + surface + "," + (reversed != inverted ? ".F." : ".T.") + ")");
         }
 
+        // A shell's faces in groups that share edges. Inventor can keep a sealed hollow's faces in the same shell as
+        // the outside (the generated revolve-cut part: a ring cut wholly inside a block); STEP wants them apart, the
+        // hollow as a void. Each group with the box round its vertices, to tell the outside from what it holds.
+        List<KeyValuePair<List<SabRecord>, double[]>> FaceGroups(SabRecord shell)
+        {
+            List<SabRecord> faces = new List<SabRecord>();
+            HashSet<SabRecord> seen = new HashSet<SabRecord>();
+            for (SabRecord f = At(shell.Ref(5)); f != null && f.Type == "face" && seen.Add(f); f = At(f.Ref(3))) faces.Add(f);
+            Dictionary<SabRecord, int> edgeOwner = new Dictionary<SabRecord, int>();
+            int[] parent = new int[faces.Count];
+            for (int i = 0; i < parent.Length; i++) parent[i] = i;
+            Func<int, int> root = null;
+            root = i => parent[i] == i ? i : (parent[i] = root(parent[i]));
+            List<List<SabRecord>> edgesOf = new List<List<SabRecord>>();
+            Dictionary<SabRecord, int> uses = new Dictionary<SabRecord, int>();
+            for (int i = 0; i < faces.Count; i++)
+            {
+                List<SabRecord> mine = new List<SabRecord>();
+                HashSet<SabRecord> loops = new HashSet<SabRecord>();
+                for (SabRecord loop = At(faces[i].Ref(4)); loop != null && loop.Type == "loop" && loops.Add(loop); loop = At(loop.Ref(3)))
+                {
+                    SabRecord first = At(loop.Ref(4));
+                    for (SabRecord c = first; c != null && c.Type == "coedge"; )
+                    {
+                        SabRecord e = At(c.Ref(6));
+                        if (e != null) { mine.Add(e); int n; uses.TryGetValue(e, out n); uses[e] = n + 1; }
+                        c = At(c.Ref(3));
+                        if (c == first) break;
+                    }
+                }
+                edgesOf.Add(mine);
+            }
+            // Joined through edges two faces share. Where four do, two closed skins only touch there: in revolve-cut the
+            // ring's outer edge touches the block's top and bottom along a line.
+            for (int i = 0; i < faces.Count; i++)
+                foreach (SabRecord e in edgesOf[i])
+                {
+                    if (uses[e] != 2) continue;
+                    int j;
+                    if (edgeOwner.TryGetValue(e, out j)) parent[root(i)] = root(j);
+                    else edgeOwner[e] = i;
+                }
+            Dictionary<int, KeyValuePair<List<SabRecord>, double[]>> groups = new Dictionary<int, KeyValuePair<List<SabRecord>, double[]>>();
+            for (int i = 0; i < faces.Count; i++)
+            {
+                int g = root(i);
+                if (!groups.ContainsKey(g)) groups[g] = new KeyValuePair<List<SabRecord>, double[]>(new List<SabRecord>(), new[] { double.MaxValue, double.MaxValue, double.MaxValue, double.MinValue, double.MinValue, double.MinValue });
+                groups[g].Key.Add(faces[i]);
+                double[] box = groups[g].Value;
+                foreach (SabRecord e in edgesOf[i])
+                    foreach (int r in new[] { 3, 5 })
+                    {
+                        SabRecord v = At(e.Ref(r));
+                        double[] p = v == null ? null : Sab.VertexPosition(recs, v);
+                        if (p == null) continue;
+                        for (int k = 0; k < 3; k++) { box[k] = Math.Min(box[k], p[k]); box[3 + k] = Math.Max(box[3 + k], p[k]); }
+                    }
+            }
+            return new List<KeyValuePair<List<SabRecord>, double[]>>(groups.Values);
+        }
+
         List<string> ShellFaces(SabRecord shell)
         {
             List<string> faces = new List<string>();
@@ -746,9 +807,17 @@ namespace InvRe
         // Every edge used by an even number of coedges (two, where nothing touches): a closed solid, not a sheet.
         bool Closed(SabRecord shell)
         {
+            List<SabRecord> faces = new List<SabRecord>();
+            HashSet<SabRecord> fs = new HashSet<SabRecord>();
+            for (SabRecord f = At(shell.Ref(5)); f != null && f.Type == "face" && fs.Add(f); f = At(f.Ref(3))) faces.Add(f);
+            return Closed(faces);
+        }
+
+        bool Closed(List<SabRecord> faces)
+        {
             Dictionary<SabRecord, int> uses = new Dictionary<SabRecord, int>();
             HashSet<SabRecord> seen = new HashSet<SabRecord>();
-            for (SabRecord f = At(shell.Ref(5)); f != null && f.Type == "face" && seen.Add(f); f = At(f.Ref(3)))
+            foreach (SabRecord f in faces)
                 for (SabRecord loop = At(f.Ref(4)); loop != null && loop.Type == "loop" && seen.Add(loop); loop = At(loop.Ref(3)))
                 {
                     SabRecord first = At(loop.Ref(4));
@@ -799,6 +868,23 @@ namespace InvRe
                         List<string> closed = new List<string>(), open = new List<string>();
                         for (SabRecord shell = At(lump.Ref(4)); shell != null && shell.Type == "shell" && seen.Add(shell); shell = At(shell.Ref(3)))
                         {
+                            List<KeyValuePair<List<SabRecord>, double[]>> groups = FaceGroups(shell);
+                            if (groups.Count > 1 && groups.TrueForAll(g => Closed(g.Key)))
+                            {
+                                // A hollow kept in the outside's shell: each group a closed shell of its own, the one
+                                // with the biggest box (the outside) first, as the solid's outer shell.
+                                Func<double[], double> size = q => (q[3] - q[0]) * (q[4] - q[1]) * (q[5] - q[2]);
+                                groups.Sort((x, y) => size(y.Value).CompareTo(size(x.Value)));
+                                List<string> parts = new List<string>();
+                                foreach (KeyValuePair<List<SabRecord>, double[]> g in groups)
+                                {
+                                    List<string> ids = new List<string>();
+                                    foreach (SabRecord f in g.Key) { int id = Face(f); if (id >= 0) ids.Add("#" + id); }
+                                    if (ids.Count > 0) parts.Add("#" + Add("CLOSED_SHELL('',(" + string.Join(",", ids.ToArray()) + "))"));
+                                }
+                                closed.AddRange(parts);
+                                continue;
+                            }
                             List<string> faces = ShellFaces(shell);
                             if (faces.Count == 0) continue;
                             string list = "(" + string.Join(",", faces.ToArray()) + ")";
