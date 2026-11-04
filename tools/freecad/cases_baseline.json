@@ -331,6 +331,12 @@
   "surface_far": null,
   "volume_off": 0.041929221058781906
  },
+ "fillet-ball-grooves": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 8.328281958832114e-10
+ },
  "fillet-edge": {
   "bad": [],
   "kind": "match",
@@ -386,6 +392,14 @@
   "kind": "match",
   "surface_far": 0.0,
   "volume_off": 0.0
+ },
+ "fillet-slot-sphere": {
+  "bad": [
+   "Fillet1: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.166534482669486e-07
  },
  "fillet-two-sets": {
   "bad": [],

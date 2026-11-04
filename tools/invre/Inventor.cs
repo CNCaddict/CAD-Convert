@@ -230,6 +230,40 @@ namespace InvRe
                 // ledge, so the ball rolls off it onto the floor below; and 0.5 mm, which fits.
                 V("revolve-roll", (app, doc) => { RevolvedStep(app, doc); doc.ComponentDefinition.Features.FilletFeatures.AddSimple(EdgeSet(app, CircleEdge(doc, 0.8, 0.55)), "2 mm"); }),
                 V("revolve-plain", (app, doc) => { RevolvedStep(app, doc); doc.ComponentDefinition.Features.FilletFeatures.AddSimple(EdgeSet(app, CircleEdge(doc, 0.8, 0.55)), "0.5 mm"); }),
+                // A 20 mm ball (see Ball) with a slot 1 mm wide cut down from above to y = 3 mm, radius 2..10 mm out
+                // from the axis: its floor's two edges rounded 0.5 mm, a full round that runs into the sphere.
+                V("slot-sphere", (app, doc) => {
+                    Ball(app, doc);
+                    dynamic cd = doc.ComponentDefinition, ex = cd.Features.ExtrudeFeatures;
+                    dynamic sk = cd.Sketches.Add(OffsetPlane(doc, "12 mm", 2));
+                    sk.SketchLines.AddAsTwoPointRectangle(P(app, -0.05, 0.2), P(app, 0.05, 1.2));
+                    dynamic def = ex.CreateExtrudeDefinition(sk.Profiles.AddForSolid(), kCutOperation);
+                    def.SetDistanceExtent("18 mm", kSymmetricExtentDirection);
+                    ex.Add(def);
+                    dynamic edges = app.TransientObjects.CreateEdgeCollection();
+                    foreach (dynamic e in cd.SurfaceBodies[1].Edges)
+                    {
+                        double[] a = Xyz(e.StartVertex.Point), b = Xyz(e.StopVertex.Point);
+                        if (Math.Abs(a[1] - 0.3) < 1e-6 && Math.Abs(b[1] - 0.3) < 1e-6 && Math.Abs(Math.Abs(a[0]) - 0.05) < 1e-6 && Math.Abs(a[0] - b[0]) < 1e-6) edges.Add(e);
+                    }
+                    if (edges.Count != 2) throw new Exception("slot floor: " + edges.Count + " edges");
+                    cd.Features.FilletFeatures.AddSimple(edges, "0.5 mm");
+                }),
+                // The ball with two grooves turned in it, 1 mm wide (y 2..3 mm and -4..-3 mm) down to radius 8.5 mm:
+                // all eight of their edges rounded 0.25 mm, inside corners and outside ones together.
+                V("ball-grooves", (app, doc) => {
+                    Ball(app, doc);
+                    dynamic cd = doc.ComponentDefinition;
+                    dynamic sk = NewSketch(doc);
+                    sk.SketchLines.AddAsTwoPointRectangle(P(app, 0.85, 0.2), P(app, 1.1, 0.3));
+                    sk.SketchLines.AddAsTwoPointRectangle(P(app, 0.85, -0.4), P(app, 1.1, -0.3));
+                    cd.Features.RevolveFeatures.AddFull(sk.Profiles.AddForSolid(), cd.WorkAxes[2], kCutOperation);
+                    dynamic edges = app.TransientObjects.CreateEdgeCollection();
+                    foreach (dynamic e in cd.SurfaceBodies[1].Edges)
+                        if (EnumName("CurveTypeEnum", (int)e.CurveType) == "kCircleCurve" && Array.Exists(new[] { 0.2, 0.3, -0.3, -0.4 }, y => Math.Abs((double)e.Geometry.Center.Y - y) < 1e-6)) edges.Add(e);
+                    if (edges.Count != 8) throw new Exception("grooves: " + edges.Count + " edges");
+                    cd.Features.FilletFeatures.AddSimple(edges, "0.25 mm");
+                }),
                 V("edge",Edges((f, app, doc) => f.FilletFeatures.AddSimple(TopEdges(app, doc, false), "2 mm"))),
                 V("edges4", Edges((f, app, doc) => f.FilletFeatures.AddSimple(TopEdges(app, doc, true), "2 mm"))),
                 V("two-sets", Edges((f, app, doc) => {
@@ -1324,6 +1358,15 @@ namespace InvRe
             dynamic first = l.AddByTwoPoints(p[0], p[1]), last = first;
             for (int i = 2; i < p.Length; i++) last = l.AddByTwoPoints(last.EndSketchPoint, p[i]);
             l.AddByTwoPoints(last.EndSketchPoint, first.StartSketchPoint);
+            doc.ComponentDefinition.Features.RevolveFeatures.AddFull(sk.Profiles.AddForSolid(), doc.ComponentDefinition.WorkAxes[2], kNewBodyOperation);
+        }
+
+        // A ball of radius 10 mm about the origin, revolved about Y from a half disc on the XY plane.
+        static void Ball(dynamic app, dynamic doc)
+        {
+            dynamic sk = NewSketch(doc);
+            dynamic arc = sk.SketchArcs.AddByCenterStartEndPoint(P(app, 0, 0), P(app, 0, -1), P(app, 0, 1), true);
+            sk.SketchLines.AddByTwoPoints(arc.EndSketchPoint, arc.StartSketchPoint);
             doc.ComponentDefinition.Features.RevolveFeatures.AddFull(sk.Profiles.AddForSolid(), doc.ComponentDefinition.WorkAxes[2], kNewBodyOperation);
         }
 

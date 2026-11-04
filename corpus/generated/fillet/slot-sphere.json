@@ -1,0 +1,21 @@
+{
+  "file": "corpus\\generated\\fillet\\slot-sphere.ipt",
+  "parameters": [
+    {"name": "d1", "expression": "12 mm", "value": 1.2000000000000002, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "18 mm", "value": 1.8, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "0.5 mm", "value": 0.05, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Revolution1", "type": "kRevolveFeatureObject", "operation": "kNewBodyOperation", "extent": "kFullSweepExtent", "axis": "kSketchLineObject", "sketch": "Sketch1", "twoDirectional": "false", "profile": "+circle (0, 0) 10, line (0, -10) (0, 10)", "health": "kUpToDateHealth"},
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kCutOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "18 mm", "taper": "0 deg", "profile": "+line (-0.5, 12) (-0.5, 2), line (-0.5, 12) (0.5, 12), line (-0.5, 2) (0.5, 2), line (0.5, 12) (0.5, 2)", "health": "kUpToDateHealth"},
+    {"name": "Fillet1", "type": "kFilletFeatureObject", "filletType": "kEdgeFillet", "automaticEdgeChain": "true", "smoothRadiusTransition": "false", "rollAlongSharpEdges": "false", "rollingBallWherePossible": "true", "preserveAllFeatures": "false", "sets": "1", "radius1": "0.5 mm", "radius1Param": "d4", "allFillets1": "false", "allRounds1": "false", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 6, "dimensions": 0, "constraints": 5},
+    {"name": "Sketch2", "entities": 8, "dimensions": 0, "constraints": 12}
+  ],
+  "imates": [
+    
+  ]
+}

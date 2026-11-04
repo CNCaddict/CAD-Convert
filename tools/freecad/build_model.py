@@ -1835,6 +1835,15 @@ class Builder:
                 keep = found
             merged = None if o else merged_round(tip.Shape, names, radius)
             if merged:
+                # A face exactly as wide as the two rounds (a full round): FreeCAD's own fillet a hair smaller fits,
+                # meets whatever the edges run into as Inventor's does, and keeps its radius. The profile ends square
+                # where the face does (on a real part's slot floors, 0.15 mm off where they run into a sphere).
+                eased = next((e for e in (1e-4, 5e-4, radius * 1e-4) if rounds(tip.Shape, radius - e, names)), None)
+                if eased is not None:
+                    o = self.fillet_feature(tip, names, radius, eased, s.get("param"), label)
+                    if o is not None:
+                        keep, ease, merged = list(names), eased, None
+            if merged:
                 # Two rounds on a face narrower than they need become one, as Inventor makes them.
                 keep, tool = merged
                 o = self.round_with_tool(tip, None, radius, s.get("param"), label, tool)
@@ -1842,18 +1851,26 @@ class Builder:
                     st["merged"] = st.get("merged", 0) + 1
             if o is None:
                 keep, ease = pick_edges(tip.Shape, radius, names, started)
-                o = self.fillet_feature(tip, keep, radius, ease, s.get("param"), label) if keep else None
-                bent = bent_round_hole(tip.Shape, o.Shape, keep, radius, self.model.get("expect")) if o is not None and not ease else []
-                odd = [a for a, found in zip(pending, each) if set(found) & set(bent) and not any(a is b for b in let_be)]
-                if odd and turns < 4 * len(s["edges"]):
-                    self.remove(o)
-                    force += odd
-                    continue
-                if o is not None and not ease and set(keep) == set(names) and not agrees_with_section(tip.Shape, o.Shape, names, radius):
-                    # On a solid of revolution the section is exact; FreeCAD's fillet can round an edge a bigger
-                    # round has already met tangentially, where Inventor's leaves it (a real part: 0.6 mm³ off).
-                    self.remove(o)
-                    o = None
+                if keep and set(keep) != set(names) and not ease:
+                    # FreeCAD would round these in pieces. On a solid of revolution the section does them all at once,
+                    # exactly: a real part's second piece came out off in volume and broke every cut made after it.
+                    o = self.round_revolved(tip, names, radius, label)
+                    if o is not None:
+                        keep = list(names)
+                        st["revolved"] = st.get("revolved", 0) + len(names)
+                if o is None:
+                    o = self.fillet_feature(tip, keep, radius, ease, s.get("param"), label) if keep else None
+                    bent = bent_round_hole(tip.Shape, o.Shape, keep, radius, self.model.get("expect")) if o is not None and not ease else []
+                    odd = [a for a, found in zip(pending, each) if set(found) & set(bent) and not any(a is b for b in let_be)]
+                    if odd and turns < 4 * len(s["edges"]):
+                        self.remove(o)
+                        force += odd
+                        continue
+                    if o is not None and not ease and set(keep) == set(names) and not agrees_with_section(tip.Shape, o.Shape, names, radius):
+                        # On a solid of revolution the section is exact; FreeCAD's fillet can round an edge a bigger
+                        # round has already met tangentially, where Inventor's leaves it (a real part: 0.6 mm³ off).
+                        self.remove(o)
+                        o = None
             if o is None:
                 # On a solid of revolution, worked out in its section: exact, and the ball runs over faces too narrow
                 # for it as Inventor's does.

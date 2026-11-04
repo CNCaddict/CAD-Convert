@@ -1,0 +1,18 @@
+{
+  "file": "corpus\\generated\\fillet\\ball-grooves.ipt",
+  "parameters": [
+    {"name": "d2", "expression": "0.25 mm", "value": 0.025, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Revolution1", "type": "kRevolveFeatureObject", "operation": "kNewBodyOperation", "extent": "kFullSweepExtent", "axis": "kSketchLineObject", "sketch": "Sketch1", "twoDirectional": "false", "profile": "+circle (0, 0) 10, line (0, -10) (0, 10)", "health": "kUpToDateHealth"},
+    {"name": "Revolution2", "type": "kRevolveFeatureObject", "operation": "kCutOperation", "extent": "kFullSweepExtent", "axis": "kSketchLineObject", "sketch": "Sketch2", "twoDirectional": "false", "profile": "+line (11, -3) (11, -4), line (11, -3) (8.5, -3), line (11, -4) (8.5, -4), line (8.5, -3) (8.5, -4); +line (11, 2) (11, 3), line (11, 2) (8.5, 2), line (11, 3) (8.5, 3), line (8.5, 2) (8.5, 3)", "health": "kUpToDateHealth"},
+    {"name": "Fillet1", "type": "kFilletFeatureObject", "filletType": "kEdgeFillet", "automaticEdgeChain": "true", "smoothRadiusTransition": "false", "rollAlongSharpEdges": "false", "rollingBallWherePossible": "true", "preserveAllFeatures": "false", "sets": "1", "radius1": "0.25 mm", "radius1Param": "d2", "allFillets1": "false", "allRounds1": "false", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 6, "dimensions": 0, "constraints": 5},
+    {"name": "Sketch2", "entities": 17, "dimensions": 0, "constraints": 24}
+  ],
+  "imates": [
+    
+  ]
+}
