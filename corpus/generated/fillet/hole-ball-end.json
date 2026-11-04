@@ -1,5 +1,5 @@
 {
-  "file": "groove-ends\\fillet\\hole-ball-end.ipt",
+  "file": "corpus\\generated\\fillet\\hole-ball-end.ipt",
   "parameters": [
     {"name": "d1", "expression": "12 mm", "value": 1.2000000000000002, "units": "mm", "kind": "kModelParameterObject"},
     {"name": "d2", "expression": "12 mm", "value": 1.2000000000000002, "units": "mm", "kind": "kModelParameterObject"},

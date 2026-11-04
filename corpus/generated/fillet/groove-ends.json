@@ -1,5 +1,5 @@
 {
-  "file": "groove-ends\\fillet\\groove-ends.ipt",
+  "file": "corpus\\generated\\fillet\\groove-ends.ipt",
   "parameters": [
     {"name": "d1", "expression": "90 deg", "value": 1.5707963267948966, "units": "deg", "kind": "kModelParameterObject"},
     {"name": "d2", "expression": "1 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"}
