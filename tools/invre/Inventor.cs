@@ -226,7 +226,11 @@ namespace InvRe
             // Options in AddSimple order: AllFillets, AllRounds, AutomaticEdgeChain, RollAlongSharpEdges,
             // RollingBallWherePossible, PreserveAllFeatures.
             x["fillet"] = new List<Variant> {
-                V("edge", Edges((f, app, doc) => f.FilletFeatures.AddSimple(TopEdges(app, doc, false), "2 mm"))),
+                // A turned part (see RevolvedStep): its inside corner at the 1 mm ledge rounded 2 mm, wider than the
+                // ledge, so the ball rolls off it onto the floor below; and 0.5 mm, which fits.
+                V("revolve-roll", (app, doc) => { RevolvedStep(app, doc); doc.ComponentDefinition.Features.FilletFeatures.AddSimple(EdgeSet(app, CircleEdge(doc, 0.8, 0.55)), "2 mm"); }),
+                V("revolve-plain", (app, doc) => { RevolvedStep(app, doc); doc.ComponentDefinition.Features.FilletFeatures.AddSimple(EdgeSet(app, CircleEdge(doc, 0.8, 0.55)), "0.5 mm"); }),
+                V("edge",Edges((f, app, doc) => f.FilletFeatures.AddSimple(TopEdges(app, doc, false), "2 mm"))),
                 V("edges4", Edges((f, app, doc) => f.FilletFeatures.AddSimple(TopEdges(app, doc, true), "2 mm"))),
                 V("two-sets", Edges((f, app, doc) => {
                     dynamic def = f.FilletFeatures.CreateFilletDefinition();
@@ -1308,6 +1312,28 @@ namespace InvRe
             }
             if (edge == null) throw new Exception("no edge at the wall's foot");
             cd.Features.FilletFeatures.AddSimple(EdgeSet(app, edge), radius, false, false, true, rollSharp, true, false);
+        }
+
+        // A turned part, revolved about Y: a disc of radius 10 mm (y 0..5 mm) with a rim (radius 8..10 mm) up to
+        // y 10 mm, and inside the rim a ledge 1 mm wide and 0.5 mm high (radius 7..8 mm, y 5..5.5 mm).
+        static void RevolvedStep(dynamic app, dynamic doc)
+        {
+            dynamic sk = NewSketch(doc);
+            dynamic l = sk.SketchLines;
+            dynamic[] p = { P(app, 0, 0), P(app, 1, 0), P(app, 1, 1), P(app, 0.8, 1), P(app, 0.8, 0.55), P(app, 0.7, 0.55), P(app, 0.7, 0.5), P(app, 0, 0.5) };
+            dynamic first = l.AddByTwoPoints(p[0], p[1]), last = first;
+            for (int i = 2; i < p.Length; i++) last = l.AddByTwoPoints(last.EndSketchPoint, p[i]);
+            l.AddByTwoPoints(last.EndSketchPoint, first.StartSketchPoint);
+            doc.ComponentDefinition.Features.RevolveFeatures.AddFull(sk.Profiles.AddForSolid(), doc.ComponentDefinition.WorkAxes[2], kNewBodyOperation);
+        }
+
+        // The circular edge of this radius (cm) at this height along Y (cm), round the Y axis.
+        static dynamic CircleEdge(dynamic doc, double r, double y)
+        {
+            foreach (dynamic e in doc.ComponentDefinition.SurfaceBodies[1].Edges)
+                if (EnumName("CurveTypeEnum", (int)e.CurveType) == "kCircleCurve" && Math.Abs((double)e.Geometry.Radius - r) < 1e-6 && Math.Abs((double)e.Geometry.Center.Y - y) < 1e-6)
+                    return PickEdge(e);
+            throw new Exception("no circle of radius " + r + " cm at y " + y + " cm");
         }
 
         // A 20 mm cube made through the API as an imported body (a non-parametric base feature), moved dx cm along X.

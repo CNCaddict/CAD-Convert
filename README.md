@@ -45,7 +45,7 @@ checked yet; they may convert, or may not.
 | Extrude (one side, two, symmetric, tapered, to next, to a face or work plane, from-to), revolve | Pad, Pocket, Revolution, Groove |
 | Sweep along a path or guide rail | AdditivePipe, SubtractivePipe |
 | Hole: drilled, counterbore, countersink, spot face | Hole, at the tap drill size where threaded (threads are cosmetic in Inventor's solid too) |
-| Fillet, chamfer | Fillet and Chamfer; where FreeCAD's own refuses, a round or chamfer built from a sketch profile |
+| Fillet, chamfer | Fillet and Chamfer; where FreeCAD's own refuses, a round or chamfer built from a sketch profile, or on a turned part, worked out exactly in its section |
 | Mirror, rectangular and circular patterns (including mid-plane) | Mirrored, LinearPattern, PolarPattern |
 | Shell (faces removed, inward or outward), loft (with centerline, or to a point), sheet metal plates and flanges | Thickness, Loft or multi-section Pipe, Pads |
 | Imported bodies (from STEP or other CAD) | A body on the shape as it was imported, taken from the file's own history, with the features after it rebuilt on top |
@@ -83,8 +83,8 @@ November 2026, on 141 real parts and 31 assemblies from one project, and on a li
 
 | | |
 |---|---|
-| Real parts | **121 of 141** match Inventor's solid: 71 rebuilt with their history, and 50 vendor or imported bodies with no history to carry, rebuilt on their shape as imported |
-| Test library | **162 of 237** small Inventor parts match; 58 are sketches only |
+| Real parts | **122 of 141** match Inventor's solid: 72 rebuilt with their history, and 50 vendor or imported bodies with no history to carry, rebuilt on their shape as imported |
+| Test library | **164 of 239** small Inventor parts match; 58 are sketches only |
 | Changing a parameter afterwards | 84 of 107 sampled dimensions, changed by 5%, give the same shape as Inventor does |
 | Assembly joints | 281 of 345 carried across 31 assemblies, nothing moved |
 
@@ -118,7 +118,7 @@ Run `invre.exe` with no arguments for the other commands.
 
 ## Testing a change
 
-The test library in `corpus/generated` is 237 small parts and 97 assemblies made in Inventor 2026, each showing one
+The test library in `corpus/generated` is 239 small parts and 97 assemblies made in Inventor 2026, each showing one
 feature or one awkward case, with Inventor's own report on each. Run with FreeCAD's `python.exe`:
 
 ```bash

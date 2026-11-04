@@ -1,0 +1,17 @@
+{
+  "file": "corpus\\generated\\fillet\\revolve-roll.ipt",
+  "parameters": [
+    {"name": "d1", "expression": "2 mm", "value": 0.2, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Revolution1", "type": "kRevolveFeatureObject", "operation": "kNewBodyOperation", "extent": "kFullSweepExtent", "axis": "kSketchLineObject", "sketch": "Sketch1", "twoDirectional": "false", "profile": "+line (0, 0) (0, 5), line (0, 0) (10, 0), line (0, 5) (7, 5), line (10, 0) (10, 10), line (10, 10) (8, 10), line (7, 5) (7, 5.5), line (7, 5.5) (8, 5.5), line (8, 10) (8, 5.5)", "health": "kUpToDateHealth"},
+    {"name": "Fillet1", "type": "kFilletFeatureObject", "filletType": "kEdgeFillet", "automaticEdgeChain": "true", "smoothRadiusTransition": "false", "rollAlongSharpEdges": "false", "rollingBallWherePossible": "true", "preserveAllFeatures": "false", "sets": "1", "radius1": "2 mm", "radius1Param": "d1", "allFillets1": "false", "allRounds1": "false", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 17, "dimensions": 0, "constraints": 16}
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["edge circle (0, 5.5, 0) 8", "edge circle (0, 5.5, 0) 8"]
+}

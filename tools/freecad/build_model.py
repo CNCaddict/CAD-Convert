@@ -6,7 +6,7 @@ import FreeCAD as App
 import Part, Sketcher
 import sys
 sys.path.insert(0, os.environ.get("CADCONVERT_TOOLS") or os.path.dirname(os.path.abspath(__file__)))
-from rounds import probe, holes_to_reopen, section_curve, ball_center, round_profile, merged_round, collide, merged_profile, edge_matches, same_surface
+from rounds import probe, holes_to_reopen, section_curve, ball_center, round_profile, revolved_round, merged_round, collide, merged_profile, edge_matches, same_surface
 
 V = App.Vector
 LENGTH_UNITS = {"mm", "cm", "m", "km", "in", "ft", "yd", "mil", "micron", "nm", "um"}
@@ -1821,12 +1821,18 @@ class Builder:
             if forced:
                 a, found = forced[0]
                 force = [b for b in force if b is not a]
-                o = self.round_with_tool(tip, found[0], radius, s.get("param"), label) if len(found) == 1 else None
+                # On a solid of revolution the section is exact; else the profile along the edge.
+                o = self.round_revolved(tip, found, radius, label)
+                if o is not None:
+                    st["revolved"] = st.get("revolved", 0) + len(found)
+                else:
+                    o = self.round_with_tool(tip, found[0], radius, s.get("param"), label) if len(found) == 1 else None
+                    if o is not None:
+                        st["round_a_hole"] = st.get("round_a_hole", 0) + 1
                 if o is None:
                     let_be.append(a)
                     continue
                 keep = found
-                st["round_a_hole"] = st.get("round_a_hole", 0) + 1
             merged = None if o else merged_round(tip.Shape, names, radius)
             if merged:
                 # Two rounds on a face narrower than they need become one, as Inventor makes them.
@@ -1843,6 +1849,18 @@ class Builder:
                     self.remove(o)
                     force += odd
                     continue
+                if o is not None and not ease and set(keep) == set(names) and not agrees_with_section(tip.Shape, o.Shape, names, radius):
+                    # On a solid of revolution the section is exact; FreeCAD's fillet can round an edge a bigger
+                    # round has already met tangentially, where Inventor's leaves it (a real part: 0.6 mm³ off).
+                    self.remove(o)
+                    o = None
+            if o is None:
+                # On a solid of revolution, worked out in its section: exact, and the ball runs over faces too narrow
+                # for it as Inventor's does.
+                o = self.round_revolved(tip, names, radius, label)
+                if o is not None:
+                    keep = list(names)
+                    st["revolved"] = st.get("revolved", 0) + len(names)
             if o is None:
                 # FreeCAD's fillet can't run a round past the end of a face. A profile cut or added along the edge can.
                 keep = []
@@ -1867,6 +1885,9 @@ class Builder:
                 break
         if piece > 1:
             st["pieces"] = piece
+        if st.get("revolved") and not st.get("by_tool"):
+            st["status"] = "approximate"
+            st["why"] = "%d edge(s) rounded in the revolved section, where FreeCAD's fillet refused or came out different: the shape is exact, its radius fixed" % st["revolved"]
         if st.get("by_tool"):
             # It can differ from Inventor's: one that adds material partly fills any hole it crosses.
             st["status"] = "approximate"
@@ -1917,6 +1938,45 @@ class Builder:
             else:
                 self.remove(cut)
         return last
+
+    def round_revolved(self, tip, names, radius, label):
+        """Rounds on a solid of revolution worked out in its half section (rounds.revolved_round): each piece a sketch,
+        revolved on or grooved out. The pieces are fixed geometry: the round doesn't follow its radius parameter."""
+        tool = revolved_round(tip.Shape, names, radius)
+        if tool is None:
+            return None
+        made = None
+        for kind in ("add", "cut"):
+            for face in tool[kind]:
+                before = self.body.Tip.Shape.Volume
+                sk = self.body.newObject("Sketcher::SketchObject", "Sketch")
+                sk.Label = label + " section"
+                place_sketch(sk, self.body, tool["placement"])
+                geometry = []
+                for e in face.Edges:
+                    a, b = e.valueAt(e.FirstParameter), e.valueAt(e.LastParameter)
+                    if isinstance(e.Curve, Part.Line):
+                        geometry.append(Part.LineSegment(a, b))
+                    elif isinstance(e.Curve, Part.Circle):
+                        geometry.append(Part.Arc(a, e.valueAt((e.FirstParameter + e.LastParameter) / 2), b))
+                    else:
+                        geometry.append(e.toNurbs().Edges[0].Curve)
+                sk.addGeometry(geometry, False)
+                o = self.body.newObject("PartDesign::Revolution" if kind == "add" else "PartDesign::Groove", "Feature")
+                o.Profile = sk
+                o.ReferenceAxis = (sk, ["V_Axis"])
+                o.Angle = tool["angle"]
+                o.Label = label
+                self.body.Tip = o
+                self.doc.recompute()
+                if self.sound(o) and not o.Shape.isNull() and (o.Shape.Volume > before if kind == "add" else o.Shape.Volume < before):
+                    made = o
+                    continue
+                self.remove(o)
+                self.doc.removeObject(sk.Name)
+                self.doc.recompute()
+                return None if made is None else made
+        return made
 
     def round_with_tool(self, tip, name, radius, param, label, tool=None):
         """One edge rounded by a sketch profile (the corner outside the rolling ball) cut along it, or added where the
@@ -2793,6 +2853,16 @@ def trim_to_sections(path, first, last):
     path.toggleConstruction(solid[0])
     path.addGeometry(piece, False)
     return True
+
+
+def agrees_with_section(before, after, names, radius):
+    """Whether a round on a solid of revolution changed its volume by what the section says (rounds.revolved_round,
+    by Pappus: each piece's area times the way its centre goes round); True where there's no section to ask."""
+    tool = revolved_round(before, names, radius)
+    if tool is None:
+        return True
+    change = 2 * math.pi * (sum(f.Area * f.CenterOfMass.x for f in tool["add"]) - sum(f.Area * f.CenterOfMass.x for f in tool["cut"]))
+    return abs((after.Volume - before.Volume) - change) <= 1e-5 * max(1.0, before.Volume)
 
 
 def right_way(before, after, names, radius, strict=False):

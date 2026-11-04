@@ -310,6 +310,91 @@ def roll_over(shape, faces, curves, normals, touch, center, p, radius, kind, loc
     return nearest(found)
 
 
+def revolved_round(shape, names, radius):
+    """Rounds on round edges of a solid of revolution, worked out in its half section: what a ball of this radius
+    rolling in the section can't reach is what Inventor's round fills (the section closed by the radius: grown, then
+    shrunk back), and where it can't go the round takes away (opened: shrunk, then grown). This runs over faces too
+    narrow for the ball and meets what's beyond, which FreeCAD's fillet can't (a real part: two 2 mm rounds swallow a
+    flat ring and part of a 0.75 mm groove and meet). It is exact here: a surface of revolution's nearest point to a
+    centre lies in the centre's own half plane, so the ball touches what its section does. Only the pieces at the edges
+    are kept. Returns {"placement", "add": [faces], "cut": [faces], "angle"} in the sketch frame (x out from the axis,
+    y along it), or None if the solid isn't one of revolution about the edges' axis."""
+    edges = [shape.Edges[int(n[4:]) - 1] for n in names]
+    circles = []
+    for e in edges:
+        try:
+            c = e.Curve
+        except Exception:
+            return None
+        if not isinstance(c, Part.Circle):
+            return None
+        circles.append((e, c))
+    first = circles[0][1]
+    center, turn = V(first.Center), V(first.Axis)
+    turn = turn * (1.0 / turn.Length)
+    on_axis = lambda p: ((p - center) - turn * (p - center).dot(turn)).Length < 1e-6
+    if not all(abs(abs(V(c.Axis).dot(turn)) - 1) < 1e-9 and on_axis(V(c.Center)) for _, c in circles):
+        return None
+    if not all(section_curve(f.Surface, "circle", None, (center, turn)) is not None for f in shape.Faces):
+        return None
+    e0 = circles[0][0]
+    pm = e0.valueAt((e0.FirstParameter + e0.LastParameter) / 2)
+    x = (pm - center) - turn * (pm - center).dot(turn)
+    if x.Length < 1e-9:
+        return None
+    x = x * (1.0 / x.Length)
+    y = turn
+    z = x.cross(y)
+    placement = App.Placement(App.Matrix(x.x, y.x, z.x, center.x, x.y, y.y, z.y, center.y, x.z, y.z, z.z, center.z, 0, 0, 0, 1))
+    size = 4 * shape.BoundBox.DiagonalLength + 4 * radius
+    half = Part.Face(Part.makePolygon([V(0, -size, 0), V(size, -size, 0), V(size, size, 0), V(0, size, 0), V(0, -size, 0)]))
+    try:
+        cross = half.copy()
+        cross.transformShape(placement.toMatrix())
+        region = shape.common(cross)
+        region.transformShape(placement.inverse().toMatrix())
+        if not region.Faces:
+            return None
+        region = Part.makeCompound(region.Faces) if len(region.Faces) > 1 else region.Faces[0]
+    except Exception:
+        return None
+    # Each on its own: shrinking a section with parts thinner than the ball can fail, and then only that one is lost.
+    def closing():
+        return region.makeOffset2D(radius, 0, False, False, False).makeOffset2D(-radius, 0, False, False, False).cut(region).common(half)
+    def opening():
+        shrunk = region.makeOffset2D(-radius, 0, False, False, False)
+        return region.cut(shrunk.makeOffset2D(radius, 0, False, False, False)) if shrunk.Faces else region
+    pieces = {}
+    for kind, make in (("add", closing), ("cut", opening)):
+        try:
+            pieces[kind] = make().Faces
+        except Exception:
+            pieces[kind] = []
+    add, take = Part.makeCompound(pieces["add"]), Part.makeCompound(pieces["cut"])
+    # The edges' points in the section.
+    corners = [V((V(c.Center) - center).dot(x) + c.Radius, (V(c.Center) - center).dot(y), 0) for _, c in circles]
+    # An inside corner has material over more than half a small disc round it: there only what closing fills counts,
+    # and at an outside one only what opening takes (opening also takes a whole wall thinner than the ball, and closing
+    # fills a slot narrower than it, either of which can touch the corner).
+    small = min(radius / 20, 0.05)
+    def inside_corner(p):
+        disc = Part.Face(Part.Wire(Part.makeCircle(small, p, V(0, 0, 1))))
+        try:
+            return region.common(disc).Area > 0.5 * disc.Area
+        except Exception:
+            return None
+    kinds = [inside_corner(p) for p in corners]
+    if None in kinds:
+        return None
+    near = lambda f, want: any(k == want and f.distToShape(Part.Vertex(p))[0] < 1e-6 for p, k in zip(corners, kinds))
+    whole = all(len(e.Vertexes) == 1 or e.isClosed() for e, _ in circles)
+    out = {"placement": placement, "add": [f for f in add.Faces if near(f, True)], "cut": [f for f in take.Faces if near(f, False)],
+           "angle": 360 if whole else None}
+    if not out["add"] and not out["cut"] or out["angle"] is None:
+        return None
+    return out
+
+
 def round_profile(shape, name, radius):
     """The profile round_with_tool needs for one edge, in the coordinates of a sketch placed across the edge's middle;
     None where the faces beside it change along the edge."""

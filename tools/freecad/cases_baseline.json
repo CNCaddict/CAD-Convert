@@ -367,6 +367,20 @@
   "surface_far": 0.0,
   "volume_off": 0.0
  },
+ "fillet-revolve-plain": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.102873967960853e-16
+ },
+ "fillet-revolve-roll": {
+  "bad": [
+   "Fillet1: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.0819146762465713e-16
+ },
  "fillet-roll-sharp": {
   "bad": [],
   "kind": "match",
