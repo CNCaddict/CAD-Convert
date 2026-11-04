@@ -1088,6 +1088,7 @@ class Builder:
         self.transforms = {}    # a pattern's FreeCAD name -> its model feature, for patterns of patterns
         self.ends = {}          # body name -> (body, its Tip at Inventor's End of Part)
         self.pieced = set()     # fillets and chamfers built in pieces or with profiles, which a pattern can't copy
+        self.tolerance = {}     # feature name -> the loosest vertex tolerance of its solid when it was made
 
     def new_body(self):
         self.body = self.doc.addObject("PartDesign::Body", "Body")
@@ -1860,6 +1861,18 @@ class Builder:
                         st["revolved"] = st.get("revolved", 0) + len(names)
                 if o is None:
                     o = self.fillet_feature(tip, keep, radius, ease, s.get("param"), label) if keep else None
+                    if o is not None and newly_broken(tip.Shape, o.Shape):
+                        # Faulted where the solid before was clean: the section's round, if there is one and it's
+                        # clean, is exact. Else FreeCAD's stays: on a real part nothing after it went wrong.
+                        self.remove(o)
+                        alt = self.round_revolved(tip, keep, radius, label)
+                        if alt is not None and bop_clean(alt.Shape) is not False:
+                            o = alt
+                            st["revolved"] = st.get("revolved", 0) + len(keep)
+                        else:
+                            if alt is not None:
+                                self.remove(alt)
+                            o = self.fillet_feature(tip, keep, radius, ease, s.get("param"), label)
                     bent = bent_round_hole(tip.Shape, o.Shape, keep, radius, self.model.get("expect")) if o is not None and not ease else []
                     odd = [a for a, found in zip(pending, each) if set(found) & set(bent) and not any(a is b for b in let_be)]
                     if odd and turns < 4 * len(s["edges"]):
@@ -2670,6 +2683,7 @@ class Builder:
             return
         self.body.Tip = o
         self.doc.recompute()
+        self.unrefine_if_loosened(o, st)
         if not o.isValid():
             st["status"] = "failed"
             st["why"] = " ".join(o.getStatusString().split())[:200] if hasattr(o, "getStatusString") else "FreeCAD couldn't compute it"
@@ -2686,6 +2700,30 @@ class Builder:
         if self.body.Shape.isNull():
             return
         st["volume"] = self.body.Shape.Volume
+        self.tolerance[o.Name] = loosest(o.Shape)
+
+    def unrefine_if_loosened(self, o, st):
+        """FreeCAD's face merging (Refine) can spoil a solid and still pass every check but the full one. Cut in half
+        through a turned part's axis, a real part lost 7.3 mm³ in the merge, and the merge also loosened its edges'
+        and vertices' tolerances to 4.5 mm, in the solid it was built on too, as they share them: every feature after it
+        went wrong. A solid far looser than the one it was built on gets the feature without merging, the body
+        recomputed from the start so that what was loosened is made again."""
+        base = getattr(o, "BaseFeature", None)
+        if not getattr(o, "Refine", False) or base is None or base.Name not in self.tolerance or o.Shape.isNull():
+            return
+        if loosest(o.Shape) <= max(1e-3, 100 * self.tolerance[base.Name]):
+            return
+        def rebuild():
+            for x in self.body.Group:
+                x.touch()
+            self.doc.recompute()
+        o.Refine = False
+        rebuild()
+        if o.isValid() and not o.Shape.isNull() and o.Shape.isValid() and loosest(o.Shape) <= max(1e-3, 100 * self.tolerance[base.Name]):
+            st["note"] = "faces left unmerged: FreeCAD's merge spoiled the solid"
+            return
+        o.Refine = True
+        rebuild()
 
     def round_copies(self, f, st):
         """After a pattern or mirror: the fillets and chamfers it copies, on the copies' edges. Inventor's edges are moved
@@ -2919,6 +2957,35 @@ def right_way(before, after, names, radius, strict=False):
             return True
         return wrong < 1e-5 * max(1.0, before.Volume)
     return True
+
+
+def loosest(shape):
+    """The largest tolerance of a solid's vertices: OpenCASCADE widens it where geometry only nearly meets."""
+    return max([v.Tolerance for v in shape.Vertexes] or [0.0])
+
+
+BOP_CLEAN = {}
+
+
+def bop_clean(shape):
+    """Whether OpenCASCADE's full check (the one booleans rely on) finds nothing wrong; None where it can't say."""
+    key = (round(shape.Volume, 6), len(shape.Faces), len(shape.Edges))
+    if key not in BOP_CLEAN:
+        try:
+            shape.check(True)
+            BOP_CLEAN[key] = True
+        except ValueError:
+            BOP_CLEAN[key] = False
+        except Exception:
+            BOP_CLEAN[key] = None
+    return BOP_CLEAN[key]
+
+
+def newly_broken(before, after):
+    """A round FreeCAD made that passes isValid but that the full check faults where the solid before it was clean:
+    self-intersecting. Every boolean after it can then go wrong (on real parts a pattern of grooves cut 50 mm³ where
+    it should 20, and a pattern of slots came out empty)."""
+    return bop_clean(before) is True and bop_clean(after) is False
 
 
 def pick_edges(shape, radius, names, started):
