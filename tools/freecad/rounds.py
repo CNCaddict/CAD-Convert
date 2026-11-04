@@ -395,6 +395,110 @@ def revolved_round(shape, names, radius):
     return out
 
 
+def ball_ends(shape, names, radius):
+    """Rounds on the end of a groove or hole as wide as the round: the ball fits the tube, so the end becomes half a
+    ball and the tube stops short by the ball's radius (on a ring groove, by asin(r/R) of its turn). FreeCAD's fillet
+    can't close one (a real part's 0.75 mm groove ends, 0.75 mm rounds). Worked out from the end face, cut to the
+    tube's circle: swept back along the tube to the ball's centre, the ball then taken out. Exact when the faces round
+    that end face stay the same along the sweep, which is checked. Returns, for each edge, {"placement", "face" (in the
+    sketch frame), "sweep": ("revolve", degrees) about the sketch's y axis or ("pad", mm) along its z, "volume" of the
+    sweep, "ball": centre}, or None if any edge isn't one."""
+    out, seen = [], []
+    for n in names:
+        e = shape.Edges[int(n[4:]) - 1]
+        try:
+            c = e.Curve
+        except Exception:
+            return None
+        if not isinstance(c, Part.Circle) or abs(c.Radius - radius) > 1e-6:
+            return None
+        faces = shape.ancestorsOfType(e, Part.Face)
+        ends = [f for f in faces if isinstance(f.Surface, Part.Plane)]
+        tubes = [f for f in faces if isinstance(f.Surface, (Part.Toroid, Part.Cylinder))]
+        if len(faces) != 2 or len(ends) != 1 or len(tubes) != 1:
+            return None
+        end, tube = ends[0], tubes[0]
+        # FreeCAD can split one end's arc in two at a seam: the end is worked out once.
+        if any(end.isSame(x) for x in seen):
+            continue
+        seen.append(end)
+        center, n_ = V(c.Center), V(c.Axis)
+        n_ = n_ * (1.0 / n_.Length)
+        if abs(abs(V(end.Surface.Axis).dot(n_)) - 1) > 1e-9 or abs((center - V(end.Surface.Position)).dot(n_)) > 1e-6:
+            return None
+        # Which side of the end the tube runs: points on its face just off the edge.
+        side = 0
+        pm = e.valueAt((e.FirstParameter + e.LastParameter) / 2)
+        u, v = tube.Surface.parameter(pm)
+        for du, dv in ((1e-3, 0), (-1e-3, 0), (0, 1e-3), (0, -1e-3)):
+            q = tube.Surface.value(u + du, v + dv)
+            off = (q - center).dot(n_)
+            if abs(off) > 1e-7 and tube.isInside(q, 1e-7, True):
+                side = 1 if off > 0 else -1
+                break
+        if not side:
+            return None
+        s = tube.Surface
+        if isinstance(s, Part.Toroid):
+            axis, mid = V(s.Axis), V(s.Center)
+            axis = axis * (1.0 / axis.Length)
+            rel = center - mid
+            if abs(s.MinorRadius - radius) > 1e-6 or abs(rel.dot(axis)) > 1e-6 or abs(rel.Length - s.MajorRadius) > 1e-6 or abs(axis.dot(n_)) > 1e-9:
+                return None
+            # Turned about the y axis by a positive angle, x goes towards -z: so z is set against the tube's way.
+            y = axis if axis.cross(rel).dot(n_) * side > 0 else axis * -1
+            x = rel * (1.0 / rel.Length)
+            z = x.cross(y)
+            origin = mid
+            turn = math.degrees(math.asin(radius / s.MajorRadius))
+            ball = App.Rotation(y, turn).multVec(rel) + mid
+            same = lambda g: section_curve(g, "circle", None, (mid, axis)) is not None
+        else:
+            axis = V(s.Axis)
+            axis = axis * (1.0 / axis.Length)
+            off = center - V(s.Center)
+            if abs(s.Radius - radius) > 1e-6 or abs(abs(axis.dot(n_)) - 1) > 1e-9 or (off - axis * off.dot(axis)).Length > 1e-6:
+                return None
+            z = n_ * side
+            x = V(1, 0, 0) if abs(z.x) < 0.9 else V(0, 1, 0)
+            x = x - z * x.dot(z)
+            x = x * (1.0 / x.Length)
+            y = z.cross(x)
+            origin = center
+            ball = center + z * radius
+            same = lambda g: isinstance(g, Part.Plane) and abs(V(g.Axis).dot(z)) < 1e-9 or section_curve(g, "line", lambda p: p, z) is not None and not isinstance(g, Part.Plane)
+        placement = App.Placement(App.Matrix(x.x, y.x, z.x, origin.x, x.y, y.y, z.y, origin.y, x.z, y.z, z.z, origin.z, 0, 0, 0, 1))
+        try:
+            disc = Part.Face(Part.Wire(Part.makeCircle(radius, center, n_)))
+            face = end.common(disc).Faces
+        except Exception:
+            return None
+        if len(face) != 1:
+            return None
+        face = face[0]
+        # What bounds it away from the tube's circle must look the same all along the sweep.
+        for g in face.Edges:
+            q = g.valueAt((g.FirstParameter + g.LastParameter) / 2)
+            if abs(q.distanceToPoint(center) - radius) < 1e-6:
+                continue
+            nearby = [f for f in shape.Faces if not f.isSame(end) and f.distToShape(Part.Vertex(q))[0] < 1e-6]
+            if not nearby or not all(same(f.Surface) for f in nearby):
+                return None
+        try:
+            swept = face.revolve(origin, y, turn) if isinstance(s, Part.Toroid) else face.extrude(z * radius)
+            ball_solid = Part.makeSphere(radius, ball)
+            # The ball sits in the open tube: nothing of the solid in it.
+            if shape.common(ball_solid).Volume > 1e-6 * ball_solid.Volume:
+                return None
+        except Exception:
+            return None
+        local = face.copy()
+        local.transformShape(placement.inverse().toMatrix())
+        out.append({"placement": placement, "face": local, "volume": swept.Volume, "ball": ball,
+                    "sweep": ("revolve", turn) if isinstance(s, Part.Toroid) else ("pad", radius)})
+    return out or None
+
+
 def round_profile(shape, name, radius):
     """The profile round_with_tool needs for one edge, in the coordinates of a sketch placed across the edge's middle;
     None where the faces beside it change along the edge."""

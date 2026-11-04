@@ -83,8 +83,8 @@ November 2026, on 141 real parts and 31 assemblies from one project, and on a li
 
 | | |
 |---|---|
-| Real parts | **123 of 141** match Inventor's solid: 73 rebuilt with their history, and 50 vendor or imported bodies with no history to carry, rebuilt on their shape as imported |
-| Test library | **166 of 241** small Inventor parts match; 58 are sketches only |
+| Real parts | **124 of 141** match Inventor's solid: 74 rebuilt with their history, and 50 vendor or imported bodies with no history to carry, rebuilt on their shape as imported |
+| Test library | **169 of 244** small Inventor parts match; 58 are sketches only |
 | Changing a parameter afterwards | 84 of 107 sampled dimensions, changed by 5%, give the same shape as Inventor does |
 | Assembly joints | 281 of 345 carried across 31 assemblies, nothing moved |
 
@@ -118,7 +118,7 @@ Run `invre.exe` with no arguments for the other commands.
 
 ## Testing a change
 
-The test library in `corpus/generated` is 241 small parts and 97 assemblies made in Inventor 2026, each showing one
+The test library in `corpus/generated` is 244 small parts and 97 assemblies made in Inventor 2026, each showing one
 feature or one awkward case, with Inventor's own report on each. Run with FreeCAD's `python.exe`:
 
 ```bash

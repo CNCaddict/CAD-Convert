@@ -264,6 +264,34 @@ namespace InvRe
                     if (edges.Count != 8) throw new Exception("grooves: " + edges.Count + " edges");
                     cd.Features.FilletFeatures.AddSimple(edges, "0.25 mm");
                 }),
+                // A groove 1 mm in radius turned a quarter of the way round the ball (about X, 9.5 mm out), its two
+                // ends rounded 1 mm: a round as wide as the groove, which ends it in half a ball.
+                V("groove-ends", (app, doc) => {
+                    Ball(app, doc);
+                    dynamic cd = doc.ComponentDefinition;
+                    dynamic sk = NewSketch(doc);
+                    sk.SketchCircles.AddByCenterRadius(P(app, 0, 0.95), 0.1);
+                    cd.Features.RevolveFeatures.AddByAngle(sk.Profiles.AddForSolid(), cd.WorkAxes[1], "90 deg", kPositiveExtentDirection, kCutOperation);
+                    dynamic edges = app.TransientObjects.CreateEdgeCollection();
+                    foreach (dynamic e in cd.SurfaceBodies[1].Edges)
+                        if (EnumName("CurveTypeEnum", (int)e.CurveType) == "kCircleCurve" && Math.Abs((double)e.Geometry.Radius - 0.1) < 1e-6) edges.Add(e);
+                    if (edges.Count != 2) throw new Exception("groove ends: " + edges.Count + " edges");
+                    cd.Features.FilletFeatures.AddSimple(edges, "1 mm");
+                }),
+                // A blind hole 2 mm in radius cut into the ball down to y 6 mm, its floor's edge rounded 2 mm: a round
+                // bottom.
+                V("hole-ball-end", (app, doc) => {
+                    Ball(app, doc);
+                    dynamic cd = doc.ComponentDefinition, ex = cd.Features.ExtrudeFeatures;
+                    dynamic sk = cd.Sketches.Add(OffsetPlane(doc, "12 mm", 2));
+                    sk.SketchCircles.AddByCenterRadius(P(app, 0, 0), 0.2);
+                    dynamic def = ex.CreateExtrudeDefinition(sk.Profiles.AddForSolid(), kCutOperation);
+                    def.SetDistanceExtent("12 mm", kSymmetricExtentDirection);
+                    ex.Add(def);
+                    dynamic edges = app.TransientObjects.CreateEdgeCollection();
+                    edges.Add(CircleEdge(doc, 0.2, 0.6));
+                    cd.Features.FilletFeatures.AddSimple(edges, "2 mm");
+                }),
                 V("edge",Edges((f, app, doc) => f.FilletFeatures.AddSimple(TopEdges(app, doc, false), "2 mm"))),
                 V("edges4", Edges((f, app, doc) => f.FilletFeatures.AddSimple(TopEdges(app, doc, true), "2 mm"))),
                 V("two-sets", Edges((f, app, doc) => {

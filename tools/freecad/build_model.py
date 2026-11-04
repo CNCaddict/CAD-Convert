@@ -6,7 +6,7 @@ import FreeCAD as App
 import Part, Sketcher
 import sys
 sys.path.insert(0, os.environ.get("CADCONVERT_TOOLS") or os.path.dirname(os.path.abspath(__file__)))
-from rounds import probe, holes_to_reopen, section_curve, ball_center, round_profile, revolved_round, merged_round, collide, merged_profile, edge_matches, same_surface
+from rounds import probe, holes_to_reopen, section_curve, ball_center, round_profile, revolved_round, ball_ends, merged_round, collide, merged_profile, edge_matches, same_surface
 
 V = App.Vector
 LENGTH_UNITS = {"mm", "cm", "m", "km", "in", "ft", "yd", "mil", "micron", "nm", "um"}
@@ -1834,6 +1834,12 @@ class Builder:
                     let_be.append(a)
                     continue
                 keep = found
+            if o is None:
+                # Ends of a groove or hole as wide as the round: half a ball, which FreeCAD's fillet can't close.
+                o = self.round_ball_ends(tip, names, radius, s.get("param"), label)
+                if o is not None:
+                    keep = list(names)
+                    st["ball_ends"] = st.get("ball_ends", 0) + len(names)
             merged = None if o else merged_round(tip.Shape, names, radius)
             if merged:
                 # A face exactly as wide as the two rounds (a full round): FreeCAD's own fillet a hair smaller fits,
@@ -1918,6 +1924,9 @@ class Builder:
         if st.get("revolved") and not st.get("by_tool"):
             st["status"] = "approximate"
             st["why"] = "%d edge(s) rounded in the revolved section, where FreeCAD's fillet refused or came out different: the shape is exact, its radius fixed" % st["revolved"]
+        if st.get("ball_ends") and not st.get("by_tool"):
+            st["status"] = "approximate"
+            st["why"] = "%d groove end(s) rounded as half balls, which FreeCAD's fillet can't close: the shape is exact, the end faces fixed" % st["ball_ends"]
         if st.get("by_tool"):
             # It can differ from Inventor's: one that adds material partly fills any hole it crosses.
             st["status"] = "approximate"
@@ -2007,6 +2016,80 @@ class Builder:
                 self.doc.recompute()
                 return None if made is None else made
         return made
+
+    def round_ball_ends(self, tip, names, radius, param, label):
+        """Groove or hole ends rounded by a ball as wide as the tube (rounds.ball_ends): each end face, cut to the tube,
+        is a sketch revolved or padded back along the tube, then a sphere is taken out where the ball sits. The sketch
+        is fixed geometry; the sphere follows the radius parameter."""
+        pieces = ball_ends(tip.Shape, names, radius)
+        if pieces is None:
+            return None
+        made = []
+        def undo():
+            for o in reversed(made):
+                profile = getattr(o, "Profile", None)
+                self.remove(o)
+                if profile:
+                    self.doc.removeObject(profile[0].Name if isinstance(profile, tuple) else profile.Name)
+            self.doc.recompute()
+            return None
+        ref = self.params.ref(param) if param else None
+        for k, p in enumerate(pieces):
+            before = self.body.Tip.Shape.Volume
+            sk = self.body.newObject("Sketcher::SketchObject", "Sketch")
+            sk.Label = label + " end %d face" % (k + 1)
+            place_sketch(sk, self.body, p["placement"])
+            # Ends put on the face's own corners: points worked out from each curve can miss each other
+            # by enough that a full recompute calls the loop open (seen on a real part).
+            corners = [x.Point for x in p["face"].Vertexes]
+            snap = lambda q: min(corners, key=lambda c: c.distanceToPoint(q))
+            geometry = []
+            for e in p["face"].Edges:
+                a, b = snap(e.valueAt(e.FirstParameter)), snap(e.valueAt(e.LastParameter))
+                if isinstance(e.Curve, Part.Line):
+                    geometry.append(Part.LineSegment(a, b))
+                elif isinstance(e.Curve, Part.Circle) and e.isClosed():
+                    geometry.append(Part.Circle(e.Curve.Center, V(0, 0, 1), e.Curve.Radius))
+                elif isinstance(e.Curve, Part.Circle):
+                    geometry.append(Part.Arc(a, e.valueAt((e.FirstParameter + e.LastParameter) / 2), b))
+                else:
+                    geometry.append(e.toNurbs().Edges[0].Curve)
+            # No constraints: tying the ends, the solver swung an arc onto its long way round.
+            sk.addGeometry(geometry, False)
+            kind, amount = p["sweep"]
+            o = self.body.newObject("PartDesign::Revolution" if kind == "revolve" else "PartDesign::Pad", "Feature")
+            o.Profile = sk
+            if kind == "revolve":
+                o.ReferenceAxis = (sk, ["V_Axis"])
+                o.Angle = amount
+            else:
+                o.Length = amount
+            o.Label = label + " end %d" % (k + 1)
+            self.body.Tip = o
+            made.append(o)
+            self.doc.recompute()
+            # The sweep's way round isn't certain from the sketch alone: it must add what it was worked out to.
+            for flip in (False, True):
+                if flip:
+                    o.Reversed = True
+                    self.doc.recompute()
+                if self.sound(o) and not o.Shape.isNull() and abs(o.Shape.Volume - before - p["volume"]) < 1e-3 * p["volume"] + 1e-9:
+                    break
+            else:
+                return undo()
+            before = o.Shape.Volume
+            ball = self.body.newObject("PartDesign::SubtractiveSphere", "Feature")
+            ball.Label = label + " end %d ball" % (k + 1)
+            ball.Radius = radius
+            if ref:
+                ball.setExpression("Radius", ref)
+            ball.Placement = App.Placement(p["ball"], App.Rotation())
+            self.body.Tip = ball
+            made.append(ball)
+            self.doc.recompute()
+            if not (self.sound(ball) and not ball.Shape.isNull() and ball.Shape.Volume < before):
+                return undo()
+        return made[-1]
 
     def round_with_tool(self, tip, name, radius, param, label, tool=None):
         """One edge rounded by a sketch profile (the corner outside the rolling ball) cut along it, or added where the

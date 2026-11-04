@@ -1,0 +1,22 @@
+{
+  "file": "groove-ends\\fillet\\hole-ball-end.ipt",
+  "parameters": [
+    {"name": "d1", "expression": "12 mm", "value": 1.2000000000000002, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "12 mm", "value": 1.2000000000000002, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "2 mm", "value": 0.2, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Revolution1", "type": "kRevolveFeatureObject", "operation": "kNewBodyOperation", "extent": "kFullSweepExtent", "axis": "kSketchLineObject", "sketch": "Sketch1", "twoDirectional": "false", "profile": "+circle (0, 0) 10, line (0, -10) (0, 10)", "health": "kUpToDateHealth"},
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kCutOperation", "extent": "kDistanceExtent", "direction": "kSymmetricExtentDirection", "distance": "12 mm", "taper": "0 deg", "profile": "+circle (0, 0) 2", "health": "kUpToDateHealth"},
+    {"name": "Fillet1", "type": "kFilletFeatureObject", "filletType": "kEdgeFillet", "automaticEdgeChain": "true", "smoothRadiusTransition": "false", "rollAlongSharpEdges": "false", "rollingBallWherePossible": "true", "preserveAllFeatures": "false", "sets": "1", "radius1": "2 mm", "radius1Param": "d4", "allFillets1": "false", "allRounds1": "false", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 6, "dimensions": 0, "constraints": 5},
+    {"name": "Sketch2", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["edge circle (0, 6, 0) 2"]
+}
