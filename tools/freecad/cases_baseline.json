@@ -53,6 +53,14 @@
   "surface_far": 0.0,
   "volume_off": 0.0
  },
+ "chamfer-whole-face": {
+  "bad": [
+   "Chamfer1: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 4.952806603415453e-06
+ },
  "circle-diameter-d10": {
   "bad": [],
   "kind": "no solid",

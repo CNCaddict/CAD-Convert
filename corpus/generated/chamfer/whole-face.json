@@ -1,0 +1,18 @@
+{
+  "file": "corpus\\generated\\chamfer\\whole-face.ipt",
+  "parameters": [
+    {"name": "d1", "expression": "6 mm", "value": 0.60000000000000009, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "45 deg", "value": 0.78539816339744828, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Revolution1", "type": "kRevolveFeatureObject", "operation": "kNewBodyOperation", "extent": "kFullSweepExtent", "axis": "kSketchLineObject", "sketch": "Sketch1", "twoDirectional": "false", "profile": "+line (0, 20) (0, 3), line (0, 20) (10, 20), line (0, 3) (4, 0), line (10, 0) (10, 20), line (10, 0) (4, 0)", "health": "kUpToDateHealth"},
+    {"name": "Chamfer1", "type": "kChamferFeatureObject", "chamferType": "kDistanceAndAngle", "distance": "6 mm", "distanceParam": "d1", "angle": "45 deg", "angleParam": "d3", "automaticEdgeChain": "true", "cornerSetback": "false", "preserveAllFeatures": "false", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 11, "dimensions": 0, "constraints": 10}
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["edge circle (0, 0, 0) 10", "face plane (0, 1, 0) 0"]
+}

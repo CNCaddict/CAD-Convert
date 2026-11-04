@@ -2062,6 +2062,20 @@ class Builder:
             o.Size2 = self.params.value(f.get("param2"), size)
             self.expression(o, "Size2", f.get("param2"))
         self.doc.recompute()
+        if not o.isValid() or not right_way(tip.Shape, o.Shape, names, size, strict=True):
+            # Eased off by 0.0001 mm a sliver of the face stays, and the chamfer comes out right (or at all: FreeCAD
+            # can refuse one exactly as wide as the face).
+            o.Size = size - 1e-4
+            if f.get("param") and self.params.ref(f["param"]):
+                o.setExpression("Size", "(%s) - 0.0001 mm" % self.params.ref(f["param"]))
+            self.doc.recompute()
+            if o.isValid() and right_way(tip.Shape, o.Shape, names, size, strict=True):
+                st["status"] = "approximate"
+                st["why"] = "eased by 0.0001 mm: at full size FreeCAD's chamfer, as wide as the face, refused or capped what lay past it"
+            else:
+                o.Size = size
+                self.expression(o, "Size", f.get("param"))
+                self.doc.recompute()
         # With an angle, Inventor measures the distance along the face it keeps with the chamfer. The surfaces can't tell: the
         # cone comes out at the same places. So measure how far the face was cut back, each way round.
         if f["kind"] == "kDistanceAndAngle" and o.isValid() and f.get("faces") and f["faces"][0]:
@@ -2781,9 +2795,11 @@ def trim_to_sections(path, first, last):
     return True
 
 
-def right_way(before, after, names, radius):
+def right_way(before, after, names, radius, strict=False):
     """A round on outside corners only takes material off, and on inside corners only adds it. FreeCAD's fillet can
-    report success on one that does the opposite (on a real part: inside corners, 20 mm³ less)."""
+    report success on one that does the opposite (on a real part: inside corners, 20 mm³ less). Strict, it's measured:
+    nothing at all added at outside corners, nothing taken at inside ones. A chamfer as wide as the face it cuts into
+    can come out with a cap over a recess past that face (a set screw's cup point filled), and still lose volume."""
     ways = set()
     eps = min(1e-3, radius / 100)
     for n in names:
@@ -2804,10 +2820,17 @@ def right_way(before, after, names, radius):
             return True
         ways.add(found)
     change = after.Volume - before.Volume
-    if ways == {True}:
-        return change > -1e-6
-    if ways == {False}:
-        return change < 1e-6
+    if ways not in ({True}, {False}):
+        return True
+    if (ways == {True} and change <= -1e-6) or (ways == {False} and change >= 1e-6):
+        return False
+    if strict:
+        try:
+            # Material found just off the edge (True) is an inside corner, where nothing may be taken; air, outside.
+            wrong = (before.cut(after) if ways == {True} else after.cut(before)).Volume
+        except Exception:
+            return True
+        return wrong < 1e-5 * max(1.0, before.Volume)
     return True
 
 
@@ -2939,7 +2962,10 @@ def surface_points(shape, per_face=5):
     points = []
     for f in shape.Faces:
         try:
-            nodes, triangles = f.tessellate(0.5)
+            # Coarser on big faces: only a few points are wanted, and a fine mesh of a big spline face takes seconds.
+            # A copy: a face keeps the mesh it was first given, so without one the points (and the verdict on a part
+            # near the limit) depend on what meshed it before.
+            nodes, triangles = f.copy().tessellate(max(0.5, f.BoundBox.DiagonalLength / 200))
             step = max(1, len(triangles) // per_face)
             s = f.Surface
             for t in triangles[::step][:per_face]:
@@ -2952,10 +2978,14 @@ def surface_points(shape, per_face=5):
 
 def surface_apart(a, b):
     """How far apart two solids' surfaces are: of points sampled on each, the share further than SURFACE_FAR_MM from the
-    other, and the furthest. Stops sampling at the time limit, and counts only what it reached."""
+    other, and the furthest. Stops sampling at the time limit, and counts only what it reached; None if it reached
+    nothing."""
     started = time.time()
     far, seen, worst = 0, 0, 0.0
-    for points, other in ((surface_points(a), b), (surface_points(b), a)):
+    for one, other in ((a, b), (b, a)):
+        if time.time() - started > SURFACE_CHECK_SECONDS:
+            break
+        points = surface_points(one)
         shell = Part.Compound(other.Faces)
         for p in points:
             if time.time() - started > SURFACE_CHECK_SECONDS:
@@ -2965,7 +2995,7 @@ def surface_apart(a, b):
             worst = max(worst, d)
             if d > SURFACE_FAR_MM:
                 far += 1
-    return (far / seen if seen else 1.0), worst
+    return (far / seen if seen else None), worst
 
 
 def hollows_cut(shape):
@@ -3024,7 +3054,8 @@ def frozen_solid(doc, builder, result):
             # Subtracting often fails, and equal volumes prove nothing: copies turned to the wrong angle have the same
             # volume. Whether each solid's surface lies on the other is a check that always runs.
             st["surface_far"], st["surface_worst"] = surface_apart(whole, shape)
-            rebuilt = st["surface_far"] < SURFACE_FAR_LIMIT
+            # Nothing sampled in time: the subtraction below decides alone.
+            rebuilt = st["surface_far"] is None or st["surface_far"] < SURFACE_FAR_LIMIT
         if rebuilt:
             try:
                 left = whole.cut(shape).Volume + shape.cut(whole).Volume

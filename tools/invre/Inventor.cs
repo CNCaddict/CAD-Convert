@@ -254,7 +254,32 @@ namespace InvRe
                 // Defaults (from "distance"): edge chain on, corner setback on, preserve features off.
                 V("no-setback", Edges((f, app, doc) => f.ChamferFeatures.AddUsingDistance(TopEdges(app, doc, true), "1 mm", true, false, false))),
                 V("no-chain", Edges((f, app, doc) => f.ChamferFeatures.AddUsingDistance(TopEdges(app, doc, false), "1 mm", false, true, false))),
-                V("preserve", Edges((f, app, doc) => f.ChamferFeatures.AddUsingDistance(TopEdges(app, doc, false), "1 mm", true, true, true))) };
+                V("preserve", Edges((f, app, doc) => f.ChamferFeatures.AddUsingDistance(TopEdges(app, doc, false), "1 mm", true, true, true))),
+                // A rod (radius 10 mm, y 0..20 mm, revolved about Y) with a cone recess in its end (4 mm across, 3 mm
+                // deep), chamfered 6 mm at 45 deg: exactly the width of the flat ring round the recess, as on a set
+                // screw's cup point. FreeCAD's chamfer at full size caps the recess.
+                V("whole-face", (app, doc) => {
+                    dynamic sk = NewSketch(doc);
+                    dynamic l = sk.SketchLines;
+                    dynamic[] p = { P(app, 0, 0.3), P(app, 0.4, 0), P(app, 1, 0), P(app, 1, 2), P(app, 0, 2) };
+                    // Each line from the last one's end, so the outline closes.
+                    dynamic first = l.AddByTwoPoints(p[0], p[1]), last = first;
+                    for (int i = 2; i < p.Length; i++) last = l.AddByTwoPoints(last.EndSketchPoint, p[i]);
+                    l.AddByTwoPoints(last.EndSketchPoint, first.StartSketchPoint);
+                    dynamic f = doc.ComponentDefinition.Features;
+                    string step = "revolve";
+                    try
+                    {
+                        f.RevolveFeatures.AddFull(sk.Profiles.AddForSolid(), doc.ComponentDefinition.WorkAxes[2], kNewBodyOperation);
+                        step = "end face";
+                        dynamic end = FaceAt(doc, 0.0, 1);
+                        step = "edge";
+                        dynamic edges = EdgeSet(app, RoundEdge(end, 1.0));
+                        step = "chamfer";
+                        f.ChamferFeatures.AddUsingDistanceAndAngle(edges, PickFace(end), "6 mm", "45 deg");
+                    }
+                    catch (Exception ex) { throw new Exception(step + ": " + ex.Message); }
+                }) };
 
             // A 4 mm square on the XY plane swept along a line up Z (30 mm), or that plus a quarter arc of 10 mm radius
             // bending toward +X; one setting changed.
