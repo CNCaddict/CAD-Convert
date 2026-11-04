@@ -97,9 +97,11 @@ invre close-under <folder>             close (without saving) hidden documents t
                     case "step":
                     {
                         // A part's final solid as STEP, from the file alone.
-                        StepWriter w = new StepWriter();
+                        // With --made, the first body as it was made (an imported body before the features after it).
+                        StepWriter w = new StepWriter { AsMade = args.Length > 3 && args[3] == "--made" };
                         string text = w.Write(FindSegment(Segment.ReadAll(args[1]), "PmBRepSegment").Data, Path.GetFileNameWithoutExtension(args[1]));
                         if (text == null) { Console.WriteLine("no solid in " + args[1]); return 1; }
+                        if (w.AsMade) Console.WriteLine("as made in history state " + w.MadeState);
                         File.WriteAllText(args[2], text, new UTF8Encoding(false));
                         Console.WriteLine("{0} solids, {1} sheets, {2} faces, {3} edges, {4} vertices", w.Solids, w.Sheets, w.Faces, w.Edges, w.Vertices);
                         foreach (KeyValuePair<string, int> kv in w.NotCarried) Console.WriteLine("  not carried: {0} x {1}", kv.Value, kv.Key);
@@ -119,7 +121,7 @@ invre close-under <folder>             close (without saving) hidden documents t
                     case "model":
                     {
                         List<Segment> segs = Segment.ReadAll(args[1]);
-                        File.WriteAllText(args[2], CadModel.Json(DcWithUnits(args[1], true), segs, args[1]), new UTF8Encoding(false));
+                        CadModel.Write(DcWithUnits(args[1], true), segs, args[1], args[2]);
                         break;
                     }
                     case "segs": Segs(args[1], args.Length > 2 ? args[2] : null); break;
@@ -1512,6 +1514,11 @@ invre close-under <folder>             close (without saving) hidden documents t
                 Console.WriteLine("== ASM data at 0x{0:X}: {1} entities ({2} from earlier states, marked *), {3} history records{4}", at,
                     records.Count, records.FindAll(r => r.Old).Count, history.Count, error == null ? "" : "; " + error);
                 Console.Write(names ? Sab.Names(records) : Sab.Dump(records));
+                if (!names && history.Count > 0)
+                {
+                    Console.WriteLine("-- history records (not numbered):");
+                    Console.Write(Sab.Dump(history));
+                }
                 at++;
                 blocks++;
             }

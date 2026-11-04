@@ -650,12 +650,42 @@
   "volume_off": 0.0
  },
  "imported-block": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "imported-block-cut": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1650229103485086e-16
+ },
+ "imported-block-cut-fillet": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 6.82336901738354e-07
+ },
+ "imported-block-fillet": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1423844276323716e-16
+ },
+ "imported-block-join": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.1758246453897805e-16
+ },
+ "imported-two-blocks": {
   "bad": [
-   "Base1: skipped"
+   "Surface1: skipped"
   ],
   "kind": "differs",
   "surface_far": null,
-  "volume_off": null
+  "volume_off": 0.5
  },
  "loft-angle": {
   "bad": [

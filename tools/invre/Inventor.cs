@@ -752,7 +752,31 @@ namespace InvRe
                     box.MinPoint = app.TransientGeometry.CreatePoint(-1, -1, -1);
                     box.MaxPoint = app.TransientGeometry.CreatePoint(1, 1, 1);
                     doc.ComponentDefinition.Features.NonParametricBaseFeatures.Add(app.TransientBRep.CreateSolidBlock(box));
-                }) };
+                }),
+                // Features on the imported block (20 mm cube, z -10..10 mm): the converter rebuilds them on its shape as
+                // imported, which it takes from the B-rep's history.
+                V("block-cut", (app, doc) => { ImportedBlock(app, doc, 0); HoleInTop(app, doc); }),
+                V("block-fillet", (app, doc) => {
+                    ImportedBlock(app, doc, 0);
+                    dynamic top = FaceAt(doc, 1.0);
+                    doc.ComponentDefinition.Features.FilletFeatures.AddSimple(EdgeSet(app, top.Edges[1]), "3 mm", false, false, true, false, true, false);
+                }),
+                V("block-join", (app, doc) => {
+                    ImportedBlock(app, doc, 0);
+                    dynamic ex = doc.ComponentDefinition.Features.ExtrudeFeatures;
+                    dynamic sk = doc.ComponentDefinition.Sketches.Add(PickFace(FaceAt(doc, 1.0)));
+                    sk.SketchLines.AddAsTwoPointRectangle(P(app, -0.5, -0.3), P(app, 0.4, 0.5));
+                    dynamic def = ex.CreateExtrudeDefinition(sk.Profiles.AddForSolid(), kJoinOperation);
+                    def.SetDistanceExtent("5 mm", kPositiveExtentDirection);
+                    ex.Add(def);
+                }),
+                V("block-cut-fillet", (app, doc) => {
+                    ImportedBlock(app, doc, 0);
+                    HoleInTop(app, doc);
+                    doc.ComponentDefinition.Features.FilletFeatures.AddSimple(EdgeSet(app, RoundEdge(FaceAt(doc, 1.0), 0.4)), "1 mm", false, false, true, false, true, false);
+                }),
+                // Two imported blocks side by side: only the first is the history's first body.
+                V("two-blocks", (app, doc) => { ImportedBlock(app, doc, 0); ImportedBlock(app, doc, 3); }) };
 
             // A 6 mm rod 20 mm long (z 0..20) threaded M6x1 from its top edge, or a 20 x 20 x 10 mm plate with a 5 mm hole
             // threaded inside; one setting changed. Thread(internal, rightHanded, fullDepth, depth, offset, reversed).
@@ -1259,6 +1283,26 @@ namespace InvRe
             }
             if (edge == null) throw new Exception("no edge at the wall's foot");
             cd.Features.FilletFeatures.AddSimple(EdgeSet(app, edge), radius, false, false, true, rollSharp, true, false);
+        }
+
+        // A 20 mm cube made through the API as an imported body (a non-parametric base feature), moved dx cm along X.
+        static void ImportedBlock(dynamic app, dynamic doc, double dx)
+        {
+            dynamic box = app.TransientGeometry.CreateBox();
+            box.MinPoint = app.TransientGeometry.CreatePoint(-1 + dx, -1, -1);
+            box.MaxPoint = app.TransientGeometry.CreatePoint(1 + dx, 1, 1);
+            doc.ComponentDefinition.Features.NonParametricBaseFeatures.Add(app.TransientBRep.CreateSolidBlock(box));
+        }
+
+        // An 8 mm hole through the block from a sketch on its top face, off centre.
+        static void HoleInTop(dynamic app, dynamic doc)
+        {
+            dynamic ex = doc.ComponentDefinition.Features.ExtrudeFeatures;
+            dynamic sk = doc.ComponentDefinition.Sketches.Add(PickFace(FaceAt(doc, 1.0)));
+            sk.SketchCircles.AddByCenterRadius(P(app, 0.3, 0.2), 0.4);
+            dynamic def = ex.CreateExtrudeDefinition(sk.Profiles.AddForSolid(), kCutOperation);
+            def.SetThroughAllExtent(kSymmetricExtentDirection);
+            ex.Add(def);
         }
 
         // The circular edge of this radius (cm) on a face.

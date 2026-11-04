@@ -27,6 +27,10 @@ namespace InvRe
         readonly List<KeyValuePair<SabRecord, int>> subtypes = new List<KeyValuePair<SabRecord, int>>();
         public int Faces, Edges, Vertices, Solids, Sheets;
         public Dictionary<string, int> NotCarried = new Dictionary<string, int>();
+        // Write the body as it was when first made (an imported body, before the features after it), from the B-rep's
+        // history; MadeState is then the history state that made it, -1 if the file has no such history.
+        public bool AsMade;
+        public int MadeState = -1;
 
         const double Mm = 10;
 
@@ -855,13 +859,22 @@ namespace InvRe
             while ((at = Sab.Find(brep, at)) >= 0)
             {
                 string error;
-                recs = Sab.Read(brep, at, out error);
+                List<SabRecord> history;
+                recs = Sab.Read(brep, at, out error, out history);
                 at++;
                 subtypes.Clear();
                 IndexSubtypes(recs);
+                if (AsMade)
+                {
+                    // The first body, as the state that made it left it.
+                    SabRecord first = recs.Find(r => r.Type == "body" && !r.Old);
+                    MadeState = first == null ? -1 : Sab.MadeIn(history, first.Index);
+                    if (MadeState < 0) return null;
+                    recs = Sab.AsOf(recs, history, MadeState);
+                }
                 foreach (SabRecord b in recs)
                 {
-                    if (b.Type != "body" || b.Old) continue;
+                    if (b == null || b.Type != "body" || (b.Old && !AsMade)) continue;
                     HashSet<SabRecord> seen = new HashSet<SabRecord>();
                     for (SabRecord lump = At(b.Ref(3)); lump != null && lump.Type == "lump" && seen.Add(lump); lump = At(lump.Ref(3)))
                     {

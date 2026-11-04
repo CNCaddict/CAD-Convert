@@ -1,0 +1,19 @@
+{
+  "file": "corpus\\generated\\imported\\block-cut-fillet.ipt",
+  "parameters": [
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "1 mm", "value": 0.1, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Base1", "type": "kNonParametricBaseFeatureObject", "isSolid": "true", "isComposite": "false", "health": "kUpToDateHealth"},
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kCutOperation", "extent": "kThroughAllExtent", "direction": "kSymmetricExtentDirection", "taper": "0 deg", "profile": "+circle (3, 2) 4", "health": "kUpToDateHealth"},
+    {"name": "Fillet1", "type": "kFilletFeatureObject", "filletType": "kEdgeFillet", "automaticEdgeChain": "true", "smoothRadiusTransition": "false", "rollAlongSharpEdges": "false", "rollingBallWherePossible": "true", "preserveAllFeatures": "false", "sets": "1", "radius1": "1 mm", "radius1Param": "d2", "allFillets1": "false", "allRounds1": "false", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["face plane (0, 0, 1) 10", "edge circle (-7, 12, 10) 4"]
+}

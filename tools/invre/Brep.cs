@@ -54,6 +54,55 @@ namespace InvRe
         }
 
         // The numbered entities of the ASM data starting at or after 'from'; stops at an unknown tag or the end marker.
+        // The changes each history state made: (state id, [old record, new record] pairs). In a delta_state, after its
+        // id and links, each bulletin is "1 $old $new": $- old is an entity the state made, $- new one it deleted, and
+        // both set an entity (numbered new) whose contents before the state were record old.
+        public static List<KeyValuePair<int, List<int[]>>> States(List<SabRecord> history)
+        {
+            List<KeyValuePair<int, List<int[]>>> states = new List<KeyValuePair<int, List<int[]>>>();
+            foreach (SabRecord h in history)
+            {
+                if (h.Type != "delta_state" || h.Int(0) == int.MinValue) continue;
+                List<int[]> changes = new List<int[]>();
+                for (int i = 8; i + 2 < h.Fields.Count; i++)
+                    if (h.Int(i) == 1 && h.Ref(i + 1) != null && h.Ref(i + 2) != null)
+                    {
+                        changes.Add(new[] { h.Ref(i + 1).Target, h.Ref(i + 2).Target });
+                        i += 2;
+                    }
+                states.Add(new KeyValuePair<int, List<int[]>>(h.Int(0), changes));
+            }
+            return states;
+        }
+
+        // The state that made the record numbered `index` (a body, say); -1 if none did.
+        public static int MadeIn(List<SabRecord> history, int index)
+        {
+            foreach (KeyValuePair<int, List<int[]>> s in States(history))
+                foreach (int[] c in s.Value)
+                    if (c[0] < 0 && c[1] == index) return s.Key;
+            return -1;
+        }
+
+        // The records as they were at the end of `state`: every later state undone, newest first. Each place holds the
+        // record that was there then (an earlier one, from after the history section, where a state changed it); places
+        // a later state made are left empty. Records are shared with `records`, not copied.
+        public static List<SabRecord> AsOf(List<SabRecord> records, List<SabRecord> history, int state)
+        {
+            // Earlier records aren't there at the end; only what an undone state puts back is.
+            List<SabRecord> was = records.ConvertAll(r => r.Old ? null : r);
+            List<KeyValuePair<int, List<int[]>>> later = States(history).FindAll(s => s.Key > state);
+            later.Sort((a, b) => b.Key.CompareTo(a.Key));
+            foreach (KeyValuePair<int, List<int[]>> s in later)
+                foreach (int[] c in s.Value)
+                {
+                    int old = c[0], now = c[1];
+                    if (now >= 0 && now < was.Count) was[now] = old >= 0 && old < records.Count ? records[old] : null;
+                    else if (now < 0 && old >= 0 && old < records.Count) was[old] = records[old];
+                }
+            return was;
+        }
+
         public static List<SabRecord> Read(byte[] d, int from, out string error)
         {
             List<SabRecord> history;

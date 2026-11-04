@@ -391,7 +391,7 @@ namespace InvRe
                 if (s.Name == "PmDCSegment" || s.Name == "AmDcSegment") t = NodeTable.Parse(s.Meta, s.Data);
             }
             if (t == null) throw new Exception("no design data in " + file);
-            File.WriteAllText(model, CadModel.Json(t, segs, file), new UTF8Encoding(false));
+            CadModel.Write(t, segs, file, model);
         }
 
         // What the viewer shows of a converted part (export_view.py), beside its report. Its own process: if FreeCAD can't

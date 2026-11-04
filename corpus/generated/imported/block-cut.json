@@ -1,0 +1,17 @@
+{
+  "file": "corpus\\generated\\imported\\block-cut.ipt",
+  "parameters": [
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Base1", "type": "kNonParametricBaseFeatureObject", "isSolid": "true", "isComposite": "false", "health": "kUpToDateHealth"},
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kCutOperation", "extent": "kThroughAllExtent", "direction": "kSymmetricExtentDirection", "taper": "0 deg", "profile": "+circle (3, 2) 4", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["face plane (0, 0, 1) 10"]
+}

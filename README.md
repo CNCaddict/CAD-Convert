@@ -48,10 +48,11 @@ checked yet; they may convert, or may not.
 | Fillet, chamfer | Fillet and Chamfer; where FreeCAD's own refuses, a round or chamfer built from a sketch profile |
 | Mirror, rectangular and circular patterns (including mid-plane) | Mirrored, LinearPattern, PolarPattern |
 | Shell (faces removed, inward or outward), loft (with centerline, or to a point), sheet metal plates and flanges | Thickness, Loft or multi-section Pipe, Pads |
+| Imported bodies (from STEP or other CAD) | A body on the shape as it was imported, taken from the file's own history, with the features after it rebuilt on top |
 | End of Part, suppressed and failing features | The body's Tip; left out, as in Inventor's solid |
 | Assembly constraints and joints | FreeCAD Assembly joints |
 
-Not yet: sweep taper and twist, loft rails and closed lofts, shells to both sides, imported bodies' own shape, surface
+Not yet: sweep taper and twist, loft rails and closed lofts, shells to both sides, a second imported body, surface
 features, sketch-driven patterns, 3D sketches, and work planes tied to the geometry that defines them.
 
 ## How it works
@@ -82,12 +83,12 @@ November 2026, on 141 real parts and 31 assemblies from one project, and on a li
 
 | | |
 |---|---|
-| Real parts | **63 of 141** rebuild with history and match Inventor's solid. About 50 are imported or vendor bodies with no history to carry; they get Inventor's exact solid |
-| Test library | **156 of 231** small Inventor parts match; 58 are sketches only |
+| Real parts | **120 of 141** match Inventor's solid: 70 rebuilt with their history, and 50 vendor or imported bodies with no history to carry, rebuilt on their shape as imported |
+| Test library | **161 of 236** small Inventor parts match; 58 are sketches only |
 | Changing a parameter afterwards | 84 of 107 sampled dimensions, changed by 5%, give the same shape as Inventor does |
 | Assembly joints | 281 of 345 carried across 31 assemblies, nothing moved |
 
-The biggest gaps left are FreeCAD's fillets (it refuses some rounds Inventor makes) and imported bodies.
+The biggest gap left is FreeCAD's fillets: it refuses some rounds Inventor makes.
 
 ## Quick start
 
@@ -117,7 +118,7 @@ Run `invre.exe` with no arguments for the other commands.
 
 ## Testing a change
 
-The test library in `corpus/generated` is 231 small parts and 97 assemblies made in Inventor 2026, each showing one
+The test library in `corpus/generated` is 236 small parts and 97 assemblies made in Inventor 2026, each showing one
 feature or one awkward case, with Inventor's own report on each. Run with FreeCAD's `python.exe`:
 
 ```bash

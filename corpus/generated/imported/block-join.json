@@ -1,0 +1,18 @@
+{
+  "file": "corpus\\generated\\imported\\block-join.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "5 mm", "value": 0.5, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Base1", "type": "kNonParametricBaseFeatureObject", "isSolid": "true", "isComposite": "false", "health": "kUpToDateHealth"},
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kJoinOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "5 mm", "taper": "0 deg", "profile": "+line (-5, -3) (-5, 5), line (-5, -3) (4, -3), line (-5, 5) (4, 5), line (4, -3) (4, 5)", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12}
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["face plane (0, 0, 1) 10"]
+}

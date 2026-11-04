@@ -1,4 +1,4 @@
-// The converter's neutral model: what a part holds, as JSON, for the target writers (tools/freecad/build_model.py).
+﻿// The converter's neutral model: what a part holds, as JSON, for the target writers (tools/freecad/build_model.py).
 // Lengths in mm, angles in degrees, sketch coordinates in the sketch's own plane. Curves and sketches are named by node
 // index. "expect" is what Inventor's own B-rep says the result must look like, so a writer can check what it built.
 using System;
@@ -49,7 +49,27 @@ namespace InvRe
 
         static string Vec(double[] v) { return v == null ? "null" : Arr(v); }
 
-        public static string Json(NodeTable t, List<Segment> segments, string file)
+        // The model at modelPath (â€¦.model.json) and, where the part starts from an imported body, that body as it was
+        // imported, from the B-rep's history, beside it (â€¦.made.step): the features after it are rebuilt on it.
+        public static void Write(NodeTable t, List<Segment> segments, string file, string modelPath)
+        {
+            string made = null;
+            Segment brep = segments.Find(s => string.Equals(s.Name, "PmBRepSegment", StringComparison.OrdinalIgnoreCase));
+            string madePath = MadePath(modelPath);
+            if (File.Exists(madePath)) File.Delete(madePath);
+            if (brep != null && MoreFeatures.ImportedBodies(t).Exists(x => x.Kind == "imported body"))
+                try { made = new StepWriter { AsMade = true }.Write(brep.Data, Path.GetFileNameWithoutExtension(file)); }
+                catch (Exception) { made = null; }
+            if (made != null) File.WriteAllText(madePath, made, new UTF8Encoding(false));
+            File.WriteAllText(modelPath, Json(t, segments, file, made != null), new UTF8Encoding(false));
+        }
+
+        public static string MadePath(string modelPath)
+        {
+            return modelPath.EndsWith(".model.json", StringComparison.OrdinalIgnoreCase) ? modelPath.Substring(0, modelPath.Length - 11) + ".made.step" : modelPath + ".made.step";
+        }
+
+        public static string Json(NodeTable t, List<Segment> segments, string file, bool made = false)
         {
             List<string> parameters = new List<string>();
             foreach (Params.Decoded p in Params.Decode(t))
@@ -86,7 +106,7 @@ namespace InvRe
                 + ",\n\"file\": " + Q(file)
                 + ",\n\"parameters\": [\n  " + string.Join(",\n  ", parameters.ToArray())
                 + "\n],\n\"sketches\": [\n  " + string.Join(",\n  ", sketches.ToArray())
-                + "\n],\n\"features\": [\n  " + string.Join(",\n  ", FeatureJson(t, segments).ToArray())
+                + "\n],\n\"features\": [\n  " + string.Join(",\n  ", FeatureJson(t, segments, made).ToArray())
                 + "\n],\n\"expect\": " + ExpectJson(segments)
                 + "\n}\n";
         }
@@ -294,7 +314,7 @@ namespace InvRe
             return "[" + string.Join(", ", list.ToArray()) + "]";
         }
 
-        static List<string> FeatureJson(NodeTable t, List<Segment> segments)
+        static List<string> FeatureJson(NodeTable t, List<Segment> segments, bool made = false)
         {
             Dictionary<string, int> items = Naming.SketchItems(t);
             Dictionary<int, string> json = new Dictionary<int, string>();
@@ -382,7 +402,13 @@ namespace InvRe
                         x.SketchNode, LoopsJson(t, x.ProfileNode, x.SketchNode, items), Q(Op(x.Operation)), Q(Dir(x.Direction)), Q(x.ThicknessParam), N(x.ThicknessCm * Mm), WiresJson(t, x.ProfileNode, x.SketchNode, items));
                 else json[x.Index] = "{\"type\": \"sheet metal\"";
             }
-            foreach (MoreFeatures.ImportedInfo x in MoreFeatures.ImportedBodies(t)) json[x.Index] = "{\"type\": \"imported body\"";
+            // The first imported body is the one the history's first body is (the made STEP beside the model).
+            bool firstImport = made;
+            foreach (MoreFeatures.ImportedInfo x in MoreFeatures.ImportedBodies(t))
+            {
+                json[x.Index] = "{\"type\": \"imported body\"" + (firstImport && x.Kind == "imported body" ? ", \"made\": true" : "");
+                if (x.Kind == "imported body") firstImport = false;
+            }
             // Mirrors and patterns are nodes of their own, so they join the timeline by node order.
             List<KeyValuePair<int, string>> timeline = new List<KeyValuePair<int, string>>();
             HashSet<int> rolled = RolledBack(t);

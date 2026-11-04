@@ -1310,6 +1310,17 @@ class Builder:
             self.expression(o, "Length", f.get("param"))
         elif ext == "through":
             o.Type = "ThroughAll" if cut else "UpToLast"
+            base = getattr(o, "BaseFeature", None)
+            base = base.Shape if base is not None and not base.Shape.isNull() else None
+            if cut and base is not None:
+                # FreeCAD sizes through all from the shape's box, which a spline's control points can blow up (an
+                # imported body 385 mm across had a box of 200 m), and its cut with so long a tool comes out wrong (a
+                # face turned inside out). Then a length right through it, from the tight box, both ways if symmetric.
+                tight = base.optimalBoundingBox().DiagonalLength
+                if base.BoundBox.DiagonalLength > 10 * tight:
+                    o.Type = "Length"
+                    o.Length = tight * (4 if f["dir"] == "symmetric" else 2)
+                    st["note"] = "through all as %.0f mm: FreeCAD's through all is sized from a loose box here" % o.Length
         elif ext == "next":
             o.Type = "UpToFirst"
             self.body.Tip = o
@@ -2501,6 +2512,32 @@ class Builder:
         st["status"], st["why"] = "failed", "FreeCAD couldn't offset the solid inward"
         return None
 
+    def imported(self, f, st):
+        """An imported body: no history in Inventor, so its shape as it was imported, which invre takes from the B-rep's
+        history (….made.step beside the model), becomes the base of a new body; the features after it build on that."""
+        path = os.environ.get("CADCONVERT_MODEL", "")
+        path = path[:-len(".model.json")] + ".made.step" if path.endswith(".model.json") else None
+        if not f.get("made") or not path or not os.path.exists(path):
+            st["status"], st["why"] = "skipped", "not carried yet: the file has no record of its shape as imported"
+            return None
+        if any(b.Shape.Solids for b in self.bodies if not b.Shape.isNull()):
+            # The history's first body is the one written: an imported body after other solids isn't it.
+            st["status"], st["why"] = "skipped", "not carried yet: an imported body after other solids"
+            return None
+        shape = hollows_cut(Part.read(path))
+        if not shape.Solids:
+            st["status"], st["why"] = "failed", "its shape as imported has no solid"
+            return None
+        base = self.doc.addObject("Part::Feature", "Imported")
+        base.Label = "%s (imported shape)" % (f["name"] or "Imported")
+        base.Shape = shape.Solids[0] if len(shape.Solids) == 1 else Part.makeCompound(shape.Solids)
+        base.Visibility = False
+        body = self.new_body()
+        body.BaseFeature = base
+        self.doc.recompute()
+        st["shape"] = "as imported, from the file's B-rep history"
+        return None
+
     def run(self, f):
         st = {"name": f["name"], "type": f["type"], "status": "ok"}
         report["features"].append(st)
@@ -2519,7 +2556,7 @@ class Builder:
             # The first feature past Inventor's End of Part: the body's result stays where the marker is (end_of_part).
             self.ends[self.body.Name] = (self.body, self.body.Tip)
         makers = {"extrude": self.extrude, "revolve": self.revolve, "fillet": self.fillet, "chamfer": self.chamfer, "hole": self.hole,
-                  "flange": self.flange, "shell": self.shell, "loft": self.loft, "sweep": self.sweep, "mirror": self.transform, "rectangular": self.transform, "circular": self.transform, "sketch": self.transform}
+                  "flange": self.flange, "shell": self.shell, "loft": self.loft, "sweep": self.sweep, "mirror": self.transform, "rectangular": self.transform, "circular": self.transform, "sketch": self.transform, "imported body": self.imported}
         if f["type"] == "sheet metal" and f.get("kind") in ("bend", "corner"):
             # Inventor keeps these as features of their own; the flange before them already holds their shape.
             if any(x["type"] == "flange" and x["status"] == "ok" for x in report["features"]):

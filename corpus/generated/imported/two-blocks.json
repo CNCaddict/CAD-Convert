@@ -1,0 +1,14 @@
+{
+  "file": "corpus\\generated\\imported\\two-blocks.ipt",
+  "parameters": [
+  ],
+  "features": [
+    {"name": "Base1", "type": "kNonParametricBaseFeatureObject", "isSolid": "true", "isComposite": "false", "health": "kUpToDateHealth"},
+    {"name": "Surface1", "type": "kNonParametricBaseFeatureObject", "isSolid": "false", "isComposite": "false", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+  ],
+  "imates": [
+    
+  ]
+}

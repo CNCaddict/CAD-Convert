@@ -1,0 +1,16 @@
+{
+  "file": "corpus\\generated\\imported\\block-fillet.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "3 mm", "value": 0.30000000000000004, "units": "mm", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Base1", "type": "kNonParametricBaseFeatureObject", "isSolid": "true", "isComposite": "false", "health": "kUpToDateHealth"},
+    {"name": "Fillet1", "type": "kFilletFeatureObject", "filletType": "kEdgeFillet", "automaticEdgeChain": "true", "smoothRadiusTransition": "false", "rollAlongSharpEdges": "false", "rollingBallWherePossible": "true", "preserveAllFeatures": "false", "sets": "1", "radius1": "3 mm", "radius1Param": "d0", "allFillets1": "false", "allRounds1": "false", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["edge line (10, -10, 10) (10, 10, 10)"]
+}
