@@ -15,6 +15,9 @@ ALTERNATIVES = "_alternatives"
 COMMAND_SECONDS = 150
 SAVE_SECONDS = 300
 REFS = "_refs"
+# Faces the file describes ({kind, a, b, r} surfaces), each a list of alternatives: placed on SolidCraft's own faces just
+# before the command, as a point on each, in "faces".
+FACE_REFS = "_face_refs"
 # Fillets and chamfers SolidCraft refuses whole, made in pieces and sketch profiles (see rescue). Off unless asked for: on
 # the real test parts (2026-11-02) it brought no part to match, took 40% longer, and moved as many further off as closer.
 RESCUE = os.environ.get("CADCONVERT_SOLIDCRAFT_RESCUE") == "1"
@@ -544,8 +547,9 @@ def outer_loops(loops, curves):
 class Script:
     # hollow: (STEP file, [body names in it]) of the void inside Inventor's solid, for a closed shell; measure(point,
     # direction): how far from the point Inventor's solid's next face lies that way, or None (see build_part.py).
-    def __init__(self, model, hollow=None, measure=None, solid=None, made=None):
+    def __init__(self, model, hollow=None, measure=None, solid=None, made=None, base=None):
         self.m, self.left, self.out = model, [], []
+        self.base = base
         self.hollow, self.measure = hollow, measure
         # Inventor's solid (STEP), and the first imported body as it was imported (….made.step), where there are.
         self.solid, self.made = solid, made
@@ -828,9 +832,43 @@ class Script:
         self.cmd("solid.pattern.rectangular", **p, **what)
 
     def shell(self, f):
+        if f["faces"]:
+            # Open: SolidCraft's shell takes the faces away and walls the rest, inward, outward or both ways.
+            direction = {"kInsideShellDirection": "inside", "kOutsideShellDirection": "outside", "kBothSidesShellDirection": "both"}.get(f["direction"])
+            if direction is None:
+                return "shell direction %s not carried" % f["direction"]
+            p = {"faces": [], "thickness": f["param"] or "%.6f mm" % f["thickness"], "direction": direction, FACE_REFS: f["faces"]}
+            if self.bodies:
+                p["body"] = self.bodies[-1]
+            self.cmd("solid.shell", **p)
+            if f["sets"]:
+                # A flat face with a thickness of its own: its wall's inside face moved into the hollow (or out of it) by
+                # the difference, with SolidCraft's Offset Face. Inward shells only, where that face lies the common
+                # thickness in from it.
+                common = f["thickness"]
+                carried = direction == "inside" and len(f.get("faceSets") or []) == f["sets"]
+                for fs in f.get("faceSets") or []:
+                    if not carried or fs.get("thickness") is None:
+                        break
+                    for alternatives in fs["faces"]:
+                        planes = [r for r in alternatives if r.get("kind") == "plane" and r.get("a") and r.get("b")]
+                        if not planes:
+                            carried = False
+                            break
+                        n = unit(planes[0]["b"])
+                        inner = dict(planes[0], a=[x - y * common for x, y in zip(planes[0]["a"], n)])
+                        q = {"faces": [], "distance": "%.6f mm" % (fs["thickness"] - common), FACE_REFS: [[inner]]}
+                        if self.bodies:
+                            q["body"] = self.bodies[-1]
+                        self.cmd("solid.offset_face", **q)
+                if not carried:
+                    self.approximate(f, "faces Inventor gives a thickness of their own have the common one")
+                else:
+                    self.approximate(f, "the walls of faces with a thickness of their own are moved by fixed amounts")
+            return None
         # SolidCraft's shell needs a face taken away. A closed inward one is a void inside, which Inventor's solid holds as
         # its inner skin: brought in and cut out, at its fixed size.
-        if f["faces"] or f["sets"] or f["direction"] != "kInsideShellDirection":
+        if f["sets"] or f["direction"] != "kInsideShellDirection":
             return "only inward shells with no face removed are carried"
         if not self.hollow or not self.bodies:
             return "SolidCraft's shell needs a face removed, and Inventor's solid has no single hollow to use instead"
@@ -838,6 +876,160 @@ class Script:
         self.cmd("file.insert_step", path=path, name=f["name"] + " inside", names="product")
         self.cmd("solid.combine", target=self.bodies[-1], tools=names, operation="cut", name=f["name"])
         self.approximate(f, "SolidCraft's shell needs a face removed: the hollow is Inventor's, at a fixed size")
+
+    def loft(self, f):
+        op = self.operation(f)
+        if op is None:
+            return "loft kind %s not carried" % f["op"]
+        sections = f.get("sections") or []
+        if len(sections) < 2 or any(x is None or (x.get("loops") is None and x.get("point") is None) for x in sections):
+            return "loft not carried: a section wasn't decoded"
+        free = ("kFreeLoftCondition", "kSharpPointLoftCondition", None)
+        conditioned = any((f.get(e) or {}).get("condition") not in free for e in ("first", "last"))
+        # SolidCraft refuses lofting curved sections to a point ("not supported yet"): that the same way too.
+        curved_to_point = any(x.get("point") is not None for x in sections) and any(e["kind"] != "line" for x in sections for w in x.get("wires") or [] for e in w)
+        if f.get("closed") or conditioned or curved_to_point:
+            # SolidCraft's loft has no end conditions and doesn't close round a ring: Inventor's own sides between the
+            # sections, as the FreeCAD build makes them, brought in and joined (or cut).
+            return self.loft_from_inventor(f, op)
+        made = []
+        for i, sec in enumerate(sections):
+            data = self.sketches[sec["sketch"]]
+            if sec.get("point") is not None:
+                name = "%s (%s section %d)" % (data["name"], f["name"], i + 1)
+                sk = Sketch(data, set(), {sec["point"]}, self.left, self.values, name)
+                self.out += sk.script(None)
+                if sec["point"] not in sk.points:
+                    return "loft not carried: its point section wasn't drawn"
+                made.append({"sketch": name, "point": sk.points[sec["point"]]})
+                continue
+            g = {"sketch": sec["sketch"], "loops": sec["loops"], "wires": sec.get("wires"), "name": "%s section %d" % (f["name"], i + 1), "type": "loft"}
+            name = self.sketch(g)
+            entry = {"sketch": name}
+            profiles = self.profile(g)
+            if profiles is not None:
+                entry["profiles"] = profiles
+            made.append(entry)
+        p = {"sections": made, "operation": op, "name": f["name"]}
+        rails = []
+        for i, r in enumerate(f.get("rails") or []):
+            g = {"sketch": r["sketch"], "loops": r["loops"], "wires": None, "name": "%s rail %d" % (f["name"], i + 1), "type": "loft"}
+            name = self.sketch(g)
+            rails.append({"sketch": name, "curves": [self.curve_names.get(c, "c%d" % c) for loop in r["loops"] for c in loop]})
+        if rails:
+            p["rails"] = rails
+        if f.get("loftType") == "kLoftWithCenterline":
+            self.approximate(f, "SolidCraft's loft has no centerline: lofted through the sections without it")
+        if op == "new":
+            p["body_name"] = self.body_name()
+        self.cmd("solid.loft", **p)
+        return None
+
+    def sweep(self, f):
+        op = self.operation(f)
+        if op is None:
+            return "sweep kind %s not carried" % f["op"]
+        if f.get("loops") is None or not f.get("path"):
+            return "sweep not carried: its profile or path wasn't decoded"
+        taper = parse_angle(f.get("taper"))
+        twist = parse_angle(f.get("twist"))
+        if taper and (twist or f.get("rail")):
+            return "sweep not carried: a taper with a twist or rail"
+        if taper:
+            # SolidCraft's sweep has a scale, not Inventor's taper (an offset of the outline); along one straight line
+            # square to the profile a taper is an extrude's taper, as the FreeCAD build makes it.
+            line = self.straight_path(f)
+            if line is None:
+                return "sweep not carried: a taper along a path that isn't one straight line square to the profile"
+            name = self.sketch(f)
+            p = {"sketch": name, "operation": op, "name": f["name"], "distance": "%.6f mm" % line[0], "taper": f.get("taperParam") or f["taper"]}
+            profiles = self.profile(f)
+            if profiles is not None:
+                p["profiles"] = profiles
+            if line[1] < 0:
+                p["direction"] = "negative"
+            if op == "new":
+                p["body_name"] = self.body_name()
+            self.cmd("solid.extrude", **p)
+            self.approximate(f, "a sweep along a straight line, made as an extrude with the same taper")
+            return None
+        name = self.sketch(f)
+        p = {"sketch": name, "operation": op, "name": f["name"]}
+        profiles = self.profile(f)
+        if profiles is not None:
+            p["profiles"] = profiles
+        path = {"sketch": f["path"]["sketch"], "loops": [f["path"]["curves"]], "wires": None, "name": f["name"] + " path", "type": "sweep"}
+        p["path_sketch"] = self.sketch(path)
+        p["path"] = [self.curve_names.get(c, "c%d" % c) for c in f["path"]["curves"]]
+        if f.get("rail"):
+            rail = {"sketch": f["rail"]["sketch"], "loops": [f["rail"]["curves"]], "wires": None, "name": f["name"] + " rail", "type": "sweep"}
+            rail_sketch = self.sketch(rail)
+            p["rails"] = [{"sketch": rail_sketch, "curves": [self.curve_names.get(c, "c%d" % c) for c in f["rail"]["curves"]]}]
+            if f.get("scaling") == "kXProfileScaling":
+                p["rail_fit"] = "stretch"
+            elif f.get("scaling") == "kNoProfileScaling":
+                self.approximate(f, "the guide rail's 'no scaling' isn't carried: SolidCraft's rail scales the profile")
+        elif f.get("orientation") == "kParallelToOriginalProfile":
+            p["orientation"] = "parallel"
+        if twist:
+            p["twist"] = f.get("twistParam") or f["twist"]
+        if op == "new":
+            p["body_name"] = self.body_name()
+        self.cmd("solid.sweep", **p)
+        return None
+
+    def straight_path(self, f):
+        # (length, +1 or -1 along the profile's normal) when the path is one line from the profile's plane square to it.
+        data = self.sketches[f["path"]["sketch"]]
+        curves = {c["id"]: c for c in data["curves"]}
+        ids = f["path"]["curves"]
+        if len(ids) != 1 or curves.get(ids[0], {}).get("kind") != "line":
+            return None
+        c = curves[ids[0]]
+        pts = {x["id"]: x for x in data["curves"] if x["kind"] == "point"}
+        m = data["matrix"]
+        def world(pid):
+            q = pts[pid]
+            return [m[0] * q["x"] + m[1] * q["y"] + m[3], m[4] * q["x"] + m[5] * q["y"] + m[7], m[8] * q["x"] + m[9] * q["y"] + m[11]]
+        try:
+            a, b = world(c["start"]), world(c["end"])
+        except KeyError:
+            return None
+        n = self.normal(f["sketch"])
+        pm = self.sketches[f["sketch"]]["matrix"]
+        origin = [pm[3], pm[7], pm[11]]
+        if abs(dot(sub(a, origin), n)) > 1e-6:
+            a, b = b, a
+        d = sub(b, a)
+        length = math.sqrt(dot(d, d))
+        if length < 1e-9 or abs(dot(sub(a, origin), n)) > 1e-6 or abs(abs(dot(d, n)) / length - 1) > 1e-9:
+            return None
+        return length, 1 if dot(d, n) > 0 else -1
+
+    def loft_from_inventor(self, f, op):
+        if not self.solid or not self.base:
+            return "loft not carried: its end conditions or closing need Inventor's solid"
+        solid = inventor_loft(self.solid, f)
+        if solid is None:
+            return "loft not carried: Inventor's sides for it weren't found"
+        import FreeCAD, Import
+        doc = FreeCAD.newDocument("loft")
+        o = doc.addObject("Part::Feature", "Loft")
+        o.Label = "%s shape" % f["name"]
+        o.Shape = solid
+        path = "%s.%s.step" % (self.base, re.sub(r"[^\w]+", "_", f["name"]))
+        Import.export([o], path)
+        label = o.Label
+        FreeCAD.closeDocument(doc.Name)
+        self.cmd("file.insert_step", path=path, name=label, names="product")
+        if op == "new":
+            self.bodies.append(label)
+        else:
+            if not self.bodies:
+                return "loft not carried: nothing to %s" % op
+            self.cmd("solid.combine", target=self.bodies[-1], tools=[label], operation={"join": "join", "cut": "cut", "intersect": "intersect"}[op], name=f["name"])
+        self.approximate(f, "its sides are Inventor's own surfaces between the sections, fixed: SolidCraft's loft has no end conditions or closing")
+        return None
 
     def plate(self, f):
         # Sheet metal: SolidCraft's own, so its flanges, bends and corners follow its rule as Inventor's follow the part's
@@ -915,7 +1107,8 @@ class Script:
     def build(self):
         self.params()
         makers = {"extrude": self.extrude, "revolve": self.revolve, "hole": self.hole, "chamfer": self.chamfer, "fillet": self.fillet, "mirror": self.mirror, "circular": self.circular, "rectangular": self.rectangular, "shell": self.shell,
-                  "imported body": self.imported, "imported surface": self.imported, "flange": self.flange, "sheet metal": self.sheet_metal}
+                  "imported body": self.imported, "imported surface": self.imported, "flange": self.flange, "sheet metal": self.sheet_metal,
+                  "loft": self.loft, "sweep": self.sweep}
         for f in self.m["features"]:
             # Past Inventor's End of Part: not in its solid, and SolidCraft has no marker to keep them behind.
             if not f["computed"] or f["type"] == "thread" or f.get("rolledBack"):
@@ -1015,6 +1208,92 @@ def place_edges(refs, edges, faces):
         missing += not found
         points += [p for p in found if p not in points]
     return points, missing
+
+
+def parse_angle(text):
+    # "45 deg" -> 45.0; nothing or zero -> 0.
+    if not text:
+        return 0.0
+    m = re.match(r"\s*([-+0-9.eE]+)", str(text))
+    return float(m.group(1)) if m else 0.0
+
+
+def inventor_loft(step, f, near_mm=0.01):
+    """A loft's solid from Inventor's own side surfaces (as tools/freecad/build_model.py's loft_surfaces): each
+    non-analytic surface of Inventor's solid that runs through the first and last sections (round a ring, any two),
+    closed with faces on its own edges at the end sections. Runs in FreeCAD's Python. None if they aren't found."""
+    import FreeCAD, Part
+    V = FreeCAD.Vector
+    def points(sec):
+        if sec.get("point") is not None or not sec.get("wires"):
+            return []
+        out = []
+        for w in sec["wires"]:
+            for e in w:
+                if e["kind"] == "line" and e.get("a") and e.get("b"):
+                    a, b = V(*e["a"]), V(*e["b"])
+                    out += [a + (b - a) * (k / 6.0) for k in range(7)]
+                elif e["kind"] == "circle" and e.get("a") and e.get("b"):
+                    c = Part.Circle(V(*e["a"]), V(*e["b"]), e["r"])
+                    out += [c.value(c.FirstParameter + (c.LastParameter - c.FirstParameter) * k / 12.0) for k in range(12)]
+                elif e.get("from") and e.get("to"):
+                    out += [V(*e["from"]), V(*e["to"])]
+        return out
+    def curves(sec):
+        out = []
+        for w in sec.get("wires") or []:
+            for e in w:
+                if e["kind"] == "line" and e.get("a") and e.get("b"):
+                    out.append(Part.LineSegment(V(*e["a"]), V(*e["b"])).toShape())
+                elif e["kind"] == "circle" and e.get("a") and e.get("b"):
+                    out.append(Part.Circle(V(*e["a"]), V(*e["b"]), e["r"]).toShape())
+        return out
+    try:
+        inv = Part.read(step)
+        secs = f["sections"]
+        pts = [points(x) for x in secs]
+        first, last = pts[0], pts[-1]
+        sides = []
+        for face in inv.Faces:
+            if isinstance(face.Surface, Part.Plane):
+                continue
+            # A cone or cylinder made whole would have no end: Inventor's face as it is (a loft to a point is a cone).
+            whole = face.copy() if isinstance(face.Surface, (Part.Cylinder, Part.Cone, Part.Sphere, Part.Toroid)) else Part.Face(face.Surface)
+            near = lambda ps: [q for q in ps if whole.distToShape(Part.Vertex(q))[0] < near_mm]
+            if f.get("closed"):
+                if sum(1 for ps in pts if ps and near(ps)) >= 2:
+                    sides.append(whole)
+            elif (not first or near(first)) and (not last or near(last)) and (first or last):
+                sides.append(whole)
+        if not sides:
+            return None
+        caps = []
+        if not f.get("closed"):
+            for ps in (first, last):
+                if not ps:
+                    continue
+                section = Part.Compound([Part.Vertex(q) for q in ps] + curves(secs[0] if ps is first else secs[-1]))
+                edges = [e for x in sides for e in x.Edges if e.Length > 1e-6
+                         and all(section.distToShape(Part.Vertex(q))[0] < near_mm for q in e.discretize(6))]
+                if not edges:
+                    return None
+                w = Part.Wire(Part.__sortEdges__(edges))
+                if not w.isClosed():
+                    return None
+                caps.append(Part.Face(w))
+        shell = Part.Shell(sides) if len(sides) == 1 and not caps else None
+        if shell is None or not shell.isClosed():
+            sewn = Part.Compound(sides + caps)
+            sewn.sewShape(1e-4)
+            if len(sewn.Shells) != 1 or not sewn.Shells[0].isClosed():
+                return None
+            shell = sewn.Shells[0]
+        solid = Part.Solid(shell)
+        if solid.Volume < 0:
+            solid.reverse()
+        return solid if solid.isValid() and solid.Volume > 1e-9 else None
+    except Exception:
+        return None
 
 
 def sent(commands):
@@ -1269,7 +1548,7 @@ def build(model, base, change=None, seconds=360, hollow=None, measure=None, soli
     """Writes base.sc and base.step if SolidCraft ends up with a solid. Returns whether it did, and what was left out.
     A command SolidCraft refuses is tried with its alternatives, else left out (a sketch's rule or dimension leaves the
     part less tied down; a feature leaves it short), and the rest go on."""
-    s = Script(model, hollow, measure, solid, made)
+    s = Script(model, hollow, measure, solid, made, base)
     commands = s.build()
     if change:
         name, factor = change.split("=")
@@ -1288,6 +1567,22 @@ def build(model, base, change=None, seconds=360, hollow=None, measure=None, soli
                 s.left.append({"why": "out of time after %d s" % seconds})
                 break
             try:
+                if FACE_REFS in c["params"]:
+                    # SolidCraft's own faces just before: a point on each that lies on a surface the file names.
+                    faces = []
+                    for b in s.bodies:
+                        ok, text = session.tool("body_topology", body=b)
+                        if ok:
+                            faces += json.loads(text).get("faces") or []
+                    points, missing = [], 0
+                    for alternatives in c["params"][FACE_REFS]:
+                        hit = [x for x in faces if any(same_surface(r, x) for r in alternatives if r.get("a"))]
+                        if hit:
+                            points += [x["point"] for x in hit if x["point"] not in points]
+                        else:
+                            missing += 1
+                    c["params"]["faces"] = points
+                    c["faces_unplaced"] = missing
                 if REFS in c["params"]:
                     # SolidCraft's own edges just before: those that are the edges the file describes.
                     edges, faces = [], {}
@@ -1375,6 +1670,8 @@ def build(model, base, change=None, seconds=360, hollow=None, measure=None, soli
     finally:
         session.close()
     for c in done:
+        if c.get("faces_unplaced"):
+            s.left.append({"feature": c["params"].get("name"), "why": "%d of %d faces not found" % (c["faces_unplaced"], len(c["params"][FACE_REFS]))})
         if REFS in c["params"]:
             missing = c.get("unplaced") if c.get("placed") else sum(edge_point(e[0]) is None for e in c["params"][REFS])
             if missing:

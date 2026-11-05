@@ -90,8 +90,9 @@ November 2026, on 141 real parts and 31 assemblies from one project, and on a li
 | Test library | **195 of 196** small Inventor parts with a solid match (58 more are sketches only) |
 | Changing a parameter afterwards | 84 of 107 sampled dimensions, changed by 5%, give the same shape as Inventor does |
 | Assembly joints | 281 of 345 carried across 31 assemblies, nothing moved |
+| SolidCraft (0.30.1) | **63 of 139** real parts and **147 of 196** test parts rebuild in SolidCraft and match; the rest come across as Inventor's exact solid |
 
-The biggest gap left is FreeCAD's fillets: it refuses some rounds Inventor makes.
+The biggest gap left is fillets: FreeCAD and SolidCraft each refuse some rounds Inventor makes.
 
 ## Quick start
 
