@@ -3241,6 +3241,11 @@ class Builder:
         history (….made.step beside the model), becomes the base of a new body; the features after it build on that."""
         path = os.environ.get("CADCONVERT_MODEL", "")
         path = path[:-len(".model.json")] + ".made.step" if path.endswith(".model.json") else None
+        imports = [x for x in self.model["features"] if x.get("type") == "imported body"]
+        if not f.get("made") and len(imports) > 1 and all(x.get("type") in ("imported body", "imported surface") for x in self.model["features"]):
+            # Only imported bodies, nothing after them to change them (a vendor part of several bodies): each is as it
+            # was imported in the part's solid now, the k-th body there.
+            return self.imported_final(f, st, imports.index(f), len(imports))
         if not f.get("made") or not path or not os.path.exists(path):
             st["status"], st["why"] = "skipped", "not carried yet: the file has no record of its shape as imported"
             return None
@@ -3260,6 +3265,27 @@ class Builder:
         body.BaseFeature = base
         self.doc.recompute()
         st["shape"] = "as imported, from the file's B-rep history"
+        return None
+
+    def imported_final(self, f, st, k, count):
+        """The k-th of a part's imported bodies taken from its solid now (the STEP written beside this), which, with no
+        features after them, is each as imported. Its B-rep's bodies come in the order the bodies were imported."""
+        path = os.environ.get("CADCONVERT_STEP")
+        if not path or not os.path.exists(path):
+            st["status"], st["why"] = "skipped", "not carried yet: the file has no record of its shape as imported"
+            return None
+        solids = Part.read(path).Solids
+        if len(solids) != count:
+            st["status"], st["why"] = "skipped", "not carried yet: the part's solid has %d bodies for %d imported" % (len(solids), count)
+            return None
+        base = self.doc.addObject("Part::Feature", "Imported")
+        base.Label = "%s (imported shape)" % (f["name"] or "Imported")
+        base.Shape = solids[k]
+        base.Visibility = False
+        body = self.new_body()
+        body.BaseFeature = base
+        self.doc.recompute()
+        st["shape"] = "as imported: the part's own solid, with nothing after it"
         return None
 
     def surface_extrude(self, f, st):

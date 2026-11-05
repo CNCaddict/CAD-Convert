@@ -85,7 +85,7 @@ November 2026, on 141 real parts and 31 assemblies from one project, and on a li
 
 | | |
 |---|---|
-| Real parts | **124 of 139** with a solid match Inventor's (2 more are sketches only): 74 rebuilt with their history, and 50 vendor or imported bodies with no history to carry, rebuilt on their shape as imported |
+| Real parts | **125 of 139** with a solid match Inventor's (2 more are sketches only): 74 rebuilt with their history, and 51 vendor or imported bodies with no history to carry, rebuilt on their shape as imported |
 | Test library | **184 of 188** small Inventor parts with a solid match (58 more are sketches only) |
 | Changing a parameter afterwards | 84 of 107 sampled dimensions, changed by 5%, give the same shape as Inventor does |
 | Assembly joints | 281 of 345 carried across 31 assemblies, nothing moved |
