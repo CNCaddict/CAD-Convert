@@ -47,14 +47,15 @@ checked yet; they may convert, or may not.
 | Hole: drilled, counterbore, countersink, spot face | Hole, at the tap drill size where threaded (threads are cosmetic in Inventor's solid too) |
 | Fillet (including all rounds), chamfer | Fillet and Chamfer; where FreeCAD's own refuses, a round or chamfer built from a sketch profile, or on a turned part, worked out exactly in its section |
 | Mirror, rectangular and circular patterns (including mid-plane) | Mirrored, LinearPattern, PolarPattern |
-| Shell (faces removed, inward, outward or both sides, faces with a thickness of their own), loft (with centerline, or to a point), sheet metal plates, flanges at any angle or flipped, bends and corner seams | Thickness, Loft or multi-section Pipe, Pads |
+| Shell (faces removed, inward, outward or both sides, faces with a thickness of their own), loft (with centerline, to a point, closed, or with end conditions), sheet metal plates, flanges at any angle or flipped, bends and corner seams | Thickness, Loft or multi-section Pipe, Pads |
 | Imported bodies (from STEP or other CAD) | A body on the shape as it was imported, taken from the file's own history, with the features after it rebuilt on top; an imported surface as a shape beside it |
 | Surface extrudes | Part Extrusion, beside the body |
 | End of Part, suppressed and failing features | The body's Tip; left out, as in Inventor's solid |
 | Assembly constraints and joints | FreeCAD Assembly joints |
 
-Not yet: loft end conditions (angle, tangent) and closed lofts (FreeCAD's loft takes its own path), loft rails, sweep
-taper, twist and rails along a curved path, surface features other than extrudes, sketch-driven patterns, 3D sketches,
+Lofts with end conditions or closed come across with their sides as Inventor's own surfaces, fixed (FreeCAD's loft
+has no end conditions and takes its own path round a ring). Not yet: loft rails, sweep taper, twist and rails along a
+curved path, surface features other than extrudes, sketch-driven patterns, 3D sketches,
 and work planes tied to the geometry that defines them.
 
 ## How it works
@@ -86,7 +87,7 @@ November 2026, on 141 real parts and 31 assemblies from one project, and on a li
 | | |
 |---|---|
 | Real parts | **125 of 139** with a solid match Inventor's (2 more are sketches only): 74 rebuilt with their history, and 51 vendor or imported bodies with no history to carry, rebuilt on their shape as imported |
-| Test library | **184 of 188** small Inventor parts with a solid match (58 more are sketches only) |
+| Test library | **195 of 196** small Inventor parts with a solid match (58 more are sketches only) |
 | Changing a parameter afterwards | 84 of 107 sampled dimensions, changed by 5%, give the same shape as Inventor does |
 | Assembly joints | 281 of 345 carried across 31 assemblies, nothing moved |
 
@@ -120,7 +121,7 @@ Run `invre.exe` with no arguments for the other commands.
 
 ## Testing a change
 
-The test library in `corpus/generated` is 246 small parts and 97 assemblies made in Inventor 2026, each showing one
+The test library in `corpus/generated` is 254 small parts and 97 assemblies made in Inventor 2026, each showing one
 feature or one awkward case, with Inventor's own report on each. Run with FreeCAD's `python.exe`:
 
 ```bash

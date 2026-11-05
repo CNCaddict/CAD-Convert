@@ -1839,9 +1839,101 @@ class Builder:
             # A sharp point is what FreeCAD's loft makes at a point anyway.
             if c and c not in ("kFreeLoftCondition", "kSharpPointLoftCondition"):
                 why.append("the %s section's %s isn't carried" % (end, c[1:].replace("LoftCondition", "").lower()))
+        if why and line is None and not f.get("rails"):
+            done, exact = self.loft_surfaces(f, sketches, o, cut)
+            if done:
+                st["note"] = "its sides are Inventor's own surfaces between the sections, fixed (%s)" % "; ".join(why).replace(" isn't carried", "").replace("closed: FreeCAD's loft takes its own path between the sections, not Inventor's", "closed")
+                return exact
         if why:
             st["status"], st["why"] = "approximate", "; ".join(why)
         return o
+
+    def loft_surfaces(self, f, sketches, o, cut):
+        """A loft FreeCAD's loft can't follow (end conditions, closed): Inventor's own side surfaces, taken whole from
+        its solid (the STEP written beside this) where they run through the first and last sections, closed with the
+        sections' faces into a solid that takes the loft's place. Its angle and weight Inventor turns into one cubic
+        span along the loft (seen on the generated lofts); FreeCAD's loft has no setting for that. None if they aren't
+        found, or don't close: (False, None), and FreeCAD's loft stays."""
+        path = os.environ.get("CADCONVERT_STEP")
+        if not path or not os.path.exists(path):
+            return False, None
+        self.doc.recompute()
+        try:
+            inv = Part.read(path)
+            wires = [sk.Shape.Wires for sk in sketches]
+            ends = [ws for ws in (wires[0], wires[-1]) if ws]
+            if not ends:
+                return False, None
+            def points(ws):
+                return [p for w in ws for e in w.Edges for p in e.discretize(12)]
+            first, last = points(wires[0]), points(wires[-1])
+            # Inventor's surface holds a section's circle as a spline 0.003 mm off it (the generated lofts).
+            near_mm = 0.01
+            sides = []
+            for face in inv.Faces:
+                if isinstance(face.Surface, (Part.Plane, Part.Cylinder, Part.Cone, Part.Sphere, Part.Toroid)):
+                    continue
+                whole = Part.Face(face.Surface)
+                near = lambda pts: [p for p in pts if whole.distToShape(Part.Vertex(p))[0] < near_mm]
+                on_first, on_last = (near(first) if first else []), (near(last) if last else [])
+                if f.get("closed"):
+                    # Round a ring: each side runs between two of the sections, any two.
+                    if sum(1 for ws in wires if ws and near(points(ws))) >= 2:
+                        sides.append(whole)
+                elif (on_first or not first) and (on_last or not last) and (on_first or on_last):
+                    sides.append(whole)
+            if not sides:
+                return False, None
+            caps = []
+            if not f.get("closed"):
+                # Closed with the sides' own edges at each section, so the caps meet them exactly.
+                for ws in (wires[0], wires[-1]):
+                    if not ws:
+                        continue
+                    section = Part.Compound(ws)
+                    edges = [e for s in sides for e in s.Edges if e.Length > 1e-6
+                             and all(section.distToShape(Part.Vertex(p))[0] < near_mm for p in e.discretize(6))]
+                    if not edges:
+                        return False, None
+                    for w in Part.Wire(Part.__sortEdges__(edges)).Wires if len(edges) > 1 else [Part.Wire(edges)]:
+                        if not w.isClosed():
+                            return False, None
+                        caps.append(Part.Face(w))
+            # One closed ring needs no sewing (and sewing one face gives no shell); faces meeting each other do.
+            shell = Part.Shell(sides) if len(sides) == 1 and not caps else None
+            if shell is None or not shell.isClosed():
+                sewn = Part.Compound(sides + caps)
+                sewn.sewShape(1e-4)
+                if len(sewn.Shells) != 1 or not sewn.Shells[0].isClosed():
+                    return False, None
+                shell = sewn.Shells[0]
+            solid = Part.Solid(shell)
+            if solid.Volume < 0:
+                solid.reverse()
+            if not solid.isValid() or solid.Volume <= 1e-9:
+                return False, None
+        except Exception:
+            return False, None
+        self.remove(o)
+        base = self.doc.addObject("Part::Feature", "Loft")
+        base.Label = "%s (Inventor's surfaces)" % (f["name"] or "Loft")
+        base.Shape = solid
+        base.Visibility = False
+        if f["op"] == "new" and self.body.BaseFeature is None and not [x for x in self.body.Group if x.isDerivedFrom("PartDesign::Feature")]:
+            self.body.BaseFeature = base
+            self.doc.recompute()
+            return True, None
+        holder = self.doc.addObject("PartDesign::Body", "Body")
+        holder.Label = "%s tool" % (f["name"] or "Loft")
+        holder.BaseFeature = base
+        holder.Visibility = False
+        j = self.body.newObject("PartDesign::Boolean", "Feature")
+        j.Label = f["name"] or j.Name
+        j.Type = "Cut" if cut else "Fuse"
+        j.setObjects([holder])
+        self.body.Tip = j
+        self.doc.recompute()
+        return True, j
 
     def revolve(self, f, st):
         op = f["op"]

@@ -1,0 +1,20 @@
+{
+  "file": "corpus\\generated\\loftc\\b60w2.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "20 mm", "value": 2, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "2 ul", "value": 2, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "60 deg", "value": 1.0471975511965976, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "2 ul", "value": 2, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "60 deg", "value": 1.0471975511965976, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Loft1", "type": "kLoftFeatureObject", "operation": "kNewBodyOperation", "loftType": "kRegularLoft", "closed": "false", "mergeTangentFaces": "false", "firstCondition": "kDirectionLoftCondition", "lastCondition": "kDirectionLoftCondition", "firstAngle": "60 deg", "firstImpact": "2 ul", "lastAngle": "60 deg", "lastImpact": "2 ul", "firstReversed": "false", "lastReversed": "false", "sections": "Sketch1: +circle (0, 0) 10 | Sketch2: +circle (0, 0) 5", "rails": "0", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 0, "constraints": 1},
+    {"name": "Sketch2", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "imates": [
+    
+  ]
+}

@@ -371,6 +371,38 @@ namespace InvRe
                     s.AddUsingPathAndGuideRail(pr, path, s.CreatePath(rail), kNewBodyOperation);
                 })) };
 
+            // Loft end conditions between coaxial circles (a turned shape, so the side is one meridian curve turned):
+            // which end, the angle and the weight changed, and the gap and the radii, to find Inventor's rule.
+            // Names: f = first section's condition, l = last's, b = both; a<angle>w<weight>; then the sections.
+            x["loftc"] = new List<Variant> {
+                V("f60w1", LoftCond("60 deg", "1 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f60w3", LoftCond("60 deg", "3 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f30w2", LoftCond("30 deg", "2 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f90w2", LoftCond("90 deg", "2 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f120w2", LoftCond("120 deg", "2 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("l60w2", LoftCond(null, null, "60 deg", "2 ul", "c 1 0", "c 0.5 2")),
+                V("b60w2", LoftCond("60 deg", "2 ul", "60 deg", "2 ul", "c 1 0", "c 0.5 2")),
+                V("b90w1", LoftCond("90 deg", "1 ul", "90 deg", "1 ul", "c 1 0", "c 0.5 2")),
+                V("f60w2-gap10", LoftCond("60 deg", "2 ul", null, null, "c 1 0", "c 0.5 1")),
+                V("f60w2-gap40", LoftCond("60 deg", "2 ul", null, null, "c 1 0", "c 0.5 4")),
+                V("f90w1-same", LoftCond("90 deg", "1 ul", null, null, "c 1 0", "c 1 2")),
+                V("f60w2-grow", LoftCond("60 deg", "2 ul", null, null, "c 0.5 0", "c 1 2")),
+                V("f60w2-three", LoftCond("60 deg", "2 ul", null, null, "c 1 0", "c 0.8 1", "c 0.5 2")),
+                V("f90w0.25", LoftCond("90 deg", "0.25 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f90w0.5", LoftCond("90 deg", "0.5 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f90w1", LoftCond("90 deg", "1 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f90w1.5", LoftCond("90 deg", "1.5 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f90w2.5", LoftCond("90 deg", "2.5 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f90w3", LoftCond("90 deg", "3 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f90w4", LoftCond("90 deg", "4 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f90w6", LoftCond("90 deg", "6 ul", null, null, "c 1 0", "c 0.5 2")),
+                V("f90w2-r2", LoftCond("90 deg", "2 ul", null, null, "c 1 0", "c 0.2 2")),
+                V("f90w2-r8", LoftCond("90 deg", "2 ul", null, null, "c 1 0", "c 0.8 2")),
+                V("f90w2-r12", LoftCond("90 deg", "2 ul", null, null, "c 1 0", "c 1.2 2")),
+                V("f90w2-r20", LoftCond("90 deg", "2 ul", null, null, "c 1 0", "c 2 2")),
+                V("tp-w1", LoftToPlane("1 ul")),
+                V("tp-w2", LoftToPlane("2 ul")) };
+
             // Sections on planes up Z: a 20 mm circle at z = 0, then others; one setting changed.
             x["loft"] = new List<Variant> {
                 V("two", Lofted((l, c, app, doc) => l.Add(l.CreateLoftDefinition(c, kNewBodyOperation)), new[] { "c 1 0", "c 0.5 2" })),
@@ -1621,6 +1653,39 @@ namespace InvRe
                 }
                 add(cd.Features.LoftFeatures, c, app, doc);
             };
+        }
+
+        // A loft through the sections with a direction condition (angle, weight) at the first and/or last section.
+        static Action<dynamic, dynamic> LoftCond(string firstAngle, string firstWeight, string lastAngle, string lastWeight, params string[] sections)
+        {
+            return Lofted((l, c, app, doc) => {
+                dynamic def = l.CreateLoftDefinition(c, kNewBodyOperation);
+                if (firstAngle != null)
+                {
+                    def.FirstSectionCondition = kDirectionLoftCondition;
+                    def.FirstSectionAngle = firstAngle;
+                    def.FirstSectionImpact = firstWeight;
+                }
+                if (lastAngle != null)
+                {
+                    def.LastSectionCondition = kDirectionLoftCondition;
+                    def.LastSectionAngle = lastAngle;
+                    def.LastSectionImpact = lastWeight;
+                }
+                l.Add(def);
+            }, sections);
+        }
+
+        // A loft from a 20 mm circle to a point 20 mm up, tangent to the point's plane there, with this weight.
+        static Action<dynamic, dynamic> LoftToPlane(string weight)
+        {
+            return Lofted((l, c, app, doc) => {
+                dynamic def = l.CreateLoftDefinition(c, kNewBodyOperation);
+                def.LastSectionCondition = kTangentToPlaneLoftCondition;
+                def.LastSectionTangentPlane = c[2].Parent.PlanarEntity;
+                def.LastSectionImpact = weight;
+                l.Add(def);
+            }, new[] { "c 1 0", "p 0 2" });
         }
 
         static void LoftFromFace(dynamic app, dynamic doc, Action<dynamic> change)

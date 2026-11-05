@@ -756,12 +756,10 @@
   "volume_off": 0.0
  },
  "loft-angle": {
-  "bad": [
-   "Loft1: approximate"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.5106351341436923
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.00013571588637633614
  },
  "loft-center": {
   "bad": [],
@@ -770,12 +768,10 @@
   "volume_off": 0.0004950278268472892
  },
  "loft-closed": {
-  "bad": [
-   "Loft1: approximate"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.2861374788241479
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 9.632572404869371e-09
  },
  "loft-cut": {
   "bad": [],
@@ -810,12 +806,10 @@
   "volume_off": 1.2407192357404348e-16
  },
  "loft-tangent-plane": {
-  "bad": [
-   "Loft1: approximate"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.6773171272264512
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.00010492680337706579
  },
  "loft-three": {
   "bad": [],
@@ -828,6 +822,54 @@
   "kind": "match",
   "surface_far": 0.0,
   "volume_off": 1.2407192357404348e-16
+ },
+ "loftc-b60w2": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.00018690181407445152
+ },
+ "loftc-f120w2": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.0741179930938465e-05
+ },
+ "loftc-f30w2": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0003005007127278128
+ },
+ "loftc-f60w2-three": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 8.194763282545748e-05
+ },
+ "loftc-f90w2-r20": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.00013838152702790559
+ },
+ "loftc-f90w4": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 4.9922142651739746e-05
+ },
+ "loftc-l60w2": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.00028176773847338204
+ },
+ "loftc-tp-w2": {
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.00014780332492001936
  },
  "mirror-adjust": {
   "bad": [],

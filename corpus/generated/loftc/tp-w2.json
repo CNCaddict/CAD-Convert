@@ -1,0 +1,20 @@
+{
+  "file": "corpus\\generated\\loftc\\tp-w2.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "20 mm", "value": 2, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0.000000 ul", "value": 0, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "90.000000 deg", "value": 1.5707963267948966, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d3", "expression": "2 ul", "value": 2, "units": "ul", "kind": "kModelParameterObject"},
+    {"name": "d4", "expression": "90.000000 deg", "value": 1.5707963267948966, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Loft1", "type": "kLoftFeatureObject", "operation": "kNewBodyOperation", "loftType": "kRegularLoft", "closed": "false", "mergeTangentFaces": "false", "firstCondition": "kFreeLoftCondition", "lastCondition": "kTangentToPlaneLoftCondition", "lastAngle": "90.000000 deg", "lastImpact": "2 ul", "lastPlane": "Work Plane1", "firstReversed": "false", "lastReversed": "false", "sections": "Sketch1: +circle (0, 0) 10 | Sketch2: point (0, 0)", "rails": "0", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 2, "dimensions": 0, "constraints": 1},
+    {"name": "Sketch2", "entities": 1, "dimensions": 0, "constraints": 0}
+  ],
+  "imates": [
+    
+  ]
+}
