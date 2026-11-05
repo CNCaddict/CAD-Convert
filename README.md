@@ -92,7 +92,7 @@ The biggest gap left is FreeCAD's fillets: it refuses some rounds Inventor makes
 
 ## Quick start
 
-**To try it:** download `CAD-Convert-0.1.0-windows.zip` from the
+**To try it:** download `CAD-Convert-0.2.0-windows.zip` from the
 [latest release](https://github.com/CNCaddict/CAD-Convert/releases/latest), unzip it anywhere and run
 `CadConvert.exe`. Nothing to install: a trimmed FreeCAD is inside, and Inventor isn't needed.
 
