@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.IO;
 using System.Text;
 
@@ -230,6 +231,12 @@ namespace InvRe
             return Timeline(t, out listed);
         }
 
+        // The browser's sheet metal Face and Flange nodes, which stand for the plate (and bend and corner) features.
+        static bool IsSheetWrapper(Node n)
+        {
+            return n != null && n.Data != null && n.Type != null && (n.Type.Key == 0xC4C14B90 || n.Type.Key == 0xC3DDDC08);
+        }
+
         // listed: the part of the order the browser gives itself.
         public static List<int> Timeline(NodeTable t, out List<int> listed)
         {
@@ -244,6 +251,18 @@ namespace InvRe
                 {
                     int x = Sketches.XRef(root.Data, p);
                     if (wanted.Contains(x) && !order.Contains(x)) { order.Add(x); p += 3; }
+                    else if (IsSheetWrapper(t.At(x)))
+                    {
+                        // A sheet metal Face or Flange as the browser lists it: the plate, or the flange and its bend and
+                        // corner, are features it refers to, in their place in the order.
+                        Node w = t.At(x);
+                        for (int q = 0; q + 4 <= w.Data.Length; q++)
+                        {
+                            int y = Sketches.XRef(w.Data, q);
+                            if (wanted.Contains(y) && !order.Contains(y)) { order.Add(y); q += 3; }
+                        }
+                        p += 3;
+                    }
                 }
                 break;
             }
@@ -369,7 +388,9 @@ namespace InvRe
             foreach (MoreFeatures.ThreadInfo x in MoreFeatures.Threads(t)) json[x.Index] = "{\"type\": \"thread\"";
             foreach (MoreFeatures.ShellInfo x in MoreFeatures.Shells(t))
                 json[x.Index] = string.Format(CultureInfo.InvariantCulture, "{{\"type\": \"shell\", \"direction\": {0}, \"param\": {1}, \"thickness\": {2}, \"sets\": {3}, \"faces\": {4}",
-                    Q(x.Direction), Q(x.ThicknessParam), N(x.ThicknessCm * Mm), x.Sets.Count, EdgesJson(x.Removed, names()));
+                    Q(x.Direction), Q(x.ThicknessParam), N(x.ThicknessCm * Mm), x.Sets.Count, EdgesJson(x.Removed, names()))
+                    + ", \"faceSets\": [" + string.Join(", ", Enumerable.Range(0, x.SetFaces.Count).Select(i => string.Format(CultureInfo.InvariantCulture,
+                        "{{\"thickness\": {0}, \"param\": {1}, \"faces\": {2}}}", double.IsNaN(x.SetCm[i]) ? "null" : N(x.SetCm[i] * Mm), Q(x.SetParams[i]), EdgesJson(x.SetFaces[i], names())))) + "]";
             foreach (MoreFeatures.SweepInfo x in MoreFeatures.Sweeps(t))
                 json[x.Index] = string.Format("{{\"type\": \"sweep\", \"op\": {0}, \"sweepType\": {1}, \"orientation\": {2}, \"scaling\": {3}, \"sketch\": {4}, \"loops\": {5}, \"wires\": {6}, \"path\": {7}, \"rail\": {8}, \"taper\": {9}, \"taperParam\": {10}, \"twist\": {11}, \"twistParam\": {12}",
                     Q(Op(x.Operation)), Q(x.SweepType), Q(x.Orientation), Q(x.Scaling), x.SketchNode, LoopsJson(t, x.ProfileNode, x.SketchNode, items), WiresJson(t, x.ProfileNode, x.SketchNode, items),
@@ -394,8 +415,15 @@ namespace InvRe
                     json[x.Index] = string.Format(CultureInfo.InvariantCulture,
                         "{{\"type\": \"flange\", \"dir\": {0}, \"height\": {1}, \"angle\": {2}, \"radius\": {3}, \"thickness\": {4}, \"edges\": {5}",
                         Q(Dir(x.Direction)), N(x.HeightCm * Mm), N(x.AngleRad * 180 / Math.PI), N(x.RadiusCm * Mm), N(x.ThicknessCm * Mm), EdgesJson(Naming.Inputs(t, t.At(x.Index)), names()));
+                else if (x.Kind == "bend" && x.Edges == 2 && !double.IsNaN(x.RadiusCm + x.ThicknessCm))
+                    // A Bend feature of its own, joining two plates at the two edges picked.
+                    json[x.Index] = string.Format(CultureInfo.InvariantCulture, "{{\"type\": \"sheet metal\", \"kind\": \"bend\", \"radius\": {0}, \"thickness\": {1}, \"edges\": {2}",
+                        N(x.RadiusCm * Mm), N(x.ThicknessCm * Mm), EdgesJson(Naming.Inputs(t, t.At(x.Index)), names()));
                 else if (x.Kind == "bend" || x.Kind == "corner")
                     json[x.Index] = "{\"type\": \"sheet metal\", \"kind\": " + Q(x.Kind);
+                else if (x.Kind == "corner feature")
+                    json[x.Index] = string.Format(CultureInfo.InvariantCulture, "{{\"type\": \"sheet metal\", \"kind\": \"corner feature\", \"cornerType\": {0}, \"gap\": {1}",
+                        Q(x.CornerType), double.IsNaN(x.GapCm) ? "null" : N(x.GapCm * Mm));
                 else if (x.Kind == "plate" && x.SketchNode >= 0 && !double.IsNaN(x.ThicknessCm))
                     json[x.Index] = string.Format(CultureInfo.InvariantCulture,
                         "{{\"type\": \"extrude\", \"sheet\": true, \"sketch\": {0}, \"loops\": {1}, \"op\": {2}, \"extent\": \"distance\", \"dir\": {3}, \"axis\": null, \"param\": {4}, \"length\": {5}, \"extent2\": null, \"param2\": null, \"length2\": null, \"taperParam\": null, \"taper\": null, \"toPlane\": null, \"to\": null, \"wires\": {6}",
@@ -406,7 +434,8 @@ namespace InvRe
             bool firstImport = made;
             foreach (MoreFeatures.ImportedInfo x in MoreFeatures.ImportedBodies(t))
             {
-                json[x.Index] = "{\"type\": \"imported body\"" + (firstImport && x.Kind == "imported body" ? ", \"made\": true" : "");
+                json[x.Index] = x.Kind == "imported surface" ? "{\"type\": \"imported surface\""
+                    : "{\"type\": \"imported body\"" + (firstImport && x.Kind == "imported body" ? ", \"made\": true" : "");
                 if (x.Kind == "imported body") firstImport = false;
             }
             // Mirrors and patterns are nodes of their own, so they join the timeline by node order.

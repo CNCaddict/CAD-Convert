@@ -869,6 +869,51 @@ def merged_profile(shape, ea, eb, radius):
     return tool
 
 
+def sharp_edges(shape, convex=True):
+    """Edges where two faces meet at an angle (not smoothly), the outside ones (convex) or the inside ones: what
+    Inventor's fillet rounds with "all rounds" or "all fillets". Each as a description edge_matches finds again."""
+    out = []
+    for e in shape.Edges:
+        faces = shape.ancestorsOfType(e, Part.Face)
+        if len(faces) != 2 or faces[0].isSame(faces[1]):
+            continue    # a seam, or the edge of an open face
+        try:
+            t0, t1 = e.FirstParameter, e.LastParameter
+            p = e.valueAt((t0 + t1) / 2)
+            tangent = e.tangentAt((t0 + t1) / 2)
+            n = []
+            for f in faces:
+                u, v = f.Surface.parameter(p)
+                d = f.normalAt(u, v)
+                n.append(d)
+        except Exception:
+            continue
+        if abs(n[0].dot(n[1])) > 1 - 1e-6 and n[0].dot(n[1]) > 0:
+            continue    # tangent faces: nothing to round
+        # Which way faces[0] runs from the edge: square to the edge in its plane, onto the face.
+        run = n[0].cross(tangent)
+        if run.Length < 1e-9:
+            continue
+        run.normalize()
+        step = max(e.Length, 1e-3) * 1e-3
+        if faces[0].distToShape(Part.Vertex(p + run * step))[0] > faces[0].distToShape(Part.Vertex(p - run * step))[0]:
+            run = -run
+        if (run.dot(n[1]) < 0) == convex:
+            out.append(edge_ref(e))
+    return out
+
+
+def edge_ref(e):
+    """A description of one of FreeCAD's edges in the form edge_matches reads (as Inventor's are decoded)."""
+    ends = [list(v.Point) for v in e.Vertexes]
+    c = e.Curve
+    if isinstance(c, Part.Line):
+        return {"kind": "line", "a": ends[0], "b": ends[-1]}
+    if isinstance(c, Part.Circle):
+        return {"kind": "circle", "a": list(c.Center), "b": list(c.Axis), "r": c.Radius, "from": ends[0], "to": ends[-1]}
+    return {"kind": "curve", "a": ends[0], "b": ends[-1]}
+
+
 def edge_matches(ref, e, shape, tol=1e-3):
     kind = ref.get("kind")
     try:

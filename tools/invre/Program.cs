@@ -99,7 +99,9 @@ invre close-under <folder>             close (without saving) hidden documents t
                         // A part's final solid as STEP, from the file alone.
                         // With --made, the first body as it was made (an imported body before the features after it).
                         StepWriter w = new StepWriter { AsMade = args.Length > 3 && args[3] == "--made" };
-                        string text = w.Write(FindSegment(Segment.ReadAll(args[1]), "PmBRepSegment").Data, Path.GetFileNameWithoutExtension(args[1]));
+                        List<Segment> all = Segment.ReadAll(args[1]);
+                        w.SurfaceBodies = StepWriter.SurfaceFlags(all);
+                        string text = w.Write(FindSegment(all, "PmBRepSegment").Data, Path.GetFileNameWithoutExtension(args[1]));
                         if (text == null) { Console.WriteLine("no solid in " + args[1]); return 1; }
                         if (w.AsMade) Console.WriteLine("as made in history state " + w.MadeState);
                         File.WriteAllText(args[2], text, new UTF8Encoding(false));

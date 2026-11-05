@@ -6,7 +6,7 @@ import FreeCAD as App
 import Part, Sketcher
 import sys
 sys.path.insert(0, os.environ.get("CADCONVERT_TOOLS") or os.path.dirname(os.path.abspath(__file__)))
-from rounds import probe, holes_to_reopen, section_curve, ball_center, round_profile, revolved_round, ball_ends, merged_round, collide, merged_profile, edge_matches, curve_chain, same_surface
+from rounds import probe, holes_to_reopen, section_curve, ball_center, round_profile, revolved_round, ball_ends, merged_round, collide, merged_profile, edge_matches, curve_chain, same_surface, sharp_edges
 
 V = App.Vector
 LENGTH_UNITS = {"mm", "cm", "m", "km", "in", "ft", "yd", "mil", "micron", "nm", "um"}
@@ -1275,8 +1275,7 @@ class Builder:
                 return None
             self.new_body()
         if op == "surface":
-            st["status"], st["why"] = "skipped", "surface extrudes aren't carried yet"
-            return None
+            return self.surface_extrude(f, st)
         if op == "intersect":
             return self.intersect(f, st)
         if op == "join" and f["extent"] in ("next", "distance"):
@@ -1616,6 +1615,123 @@ class Builder:
         o.setObjects([tool])
         return o
 
+    def straight_sweep(self, f, st, sk, path):
+        """A sweep along one straight line square to its profile, with a taper, a twist or a straight guide rail, which
+        FreeCAD's pipe has no way to give, made another way that gives the same solid: a taper is a Pad's taper (both
+        offset the outline); a rail that scales the profile is a ruled loft to the scaled profile at the far end (each
+        point runs straight); a twist is the pipe steered by a helix round the line. False when it isn't one of these."""
+        taper = App.Units.Quantity(f.get("taper") or "0 deg").Value
+        twist = App.Units.Quantity(f.get("twist") or "0 deg").Value
+        rail = f.get("rail")
+        if not (taper or twist or rail):
+            return False
+        self.doc.recompute()
+        edges = path.Shape.Edges
+        if len(edges) != 1 or not isinstance(edges[0].Curve, Part.Line):
+            return False
+        normal = sk.Placement.Rotation.multVec(V(0, 0, 1))
+        a, b = edges[0].Vertexes[0].Point, edges[0].Vertexes[-1].Point
+        if abs((a - sk.Placement.Base).dot(normal)) > 1e-6:
+            a, b = b, a
+        line = b - a
+        if line.Length < 1e-9:
+            return False
+        d = V(line)
+        d.normalize()       # (in place: line itself stays as it is)
+        if abs((a - sk.Placement.Base).dot(normal)) > 1e-6 or abs(abs(d.dot(normal)) - 1) > 1e-9:
+            return False
+        if sum(1 for x in (taper, twist, rail) if x) > 1:
+            return False
+        cut = f["op"] == "cut"
+        if taper:
+            o = self.body.newObject("PartDesign::Pocket" if cut else "PartDesign::Pad", "Feature")
+            o.Label = f["name"] or o.Name
+            o.Profile = sk
+            o.Type = "Length"
+            o.Length = (b - a).Length
+            o.Reversed = (b - a).dot(normal) < 0
+            if cut:
+                o.Reversed = not o.Reversed
+            # Inventor's positive taper widens the sweep, as FreeCAD's positive taper widens a pad (-2 degrees gave 272
+            # mm3 against Inventor's 775).
+            o.TaperAngle = taper
+            self.expression(o, "TaperAngle", f.get("taperParam"))
+            st["note"] = "a sweep along a straight line, made as a pad with the same taper"
+            return o
+        if rail:
+            if f.get("scaling") not in ("kXYProfileScaling", "kXProfileScaling"):
+                return False
+            guide, _ = self.sketch_for({"sketch": rail["sketch"], "loops": [rail["curves"]], "wires": None, "name": f["name"] + " rail"})
+            self.doc.recompute()
+            g = guide.Shape.Edges
+            if len(g) != 1 or not isinstance(g[0].Curve, Part.Line):
+                return False
+            p, q = g[0].Vertexes[0].Point, g[0].Vertexes[-1].Point
+            if (q - a).dot(line) < (p - a).dot(line):
+                p, q = q, p
+            off_p, off_q = (p - a) - d * (p - a).dot(d), (q - a) - d * (q - a).dot(d)
+            if abs((p - a).dot(d)) > 1e-6 or abs((q - a).dot(d) - line.Length) > 1e-6 or off_p.Length < 1e-9 or off_q.Length < 1e-9                     or abs(off_p.dot(off_q) / (off_p.Length * off_q.Length) - 1) > 1e-9:
+                return False
+            k = off_q.Length / off_p.Length
+            # The profile at the far end: scaled about the line by k (both ways, or only toward the rail).
+            end = self.body.newObject("Sketcher::SketchObject", "Sketch")
+            end.Label = "%s end section" % f["name"]
+            end.Placement = App.Placement(sk.Placement.Base + line, sk.Placement.Rotation)
+            inverse = sk.Placement.inverse()
+            centre = inverse.multVec(a)
+            toward = inverse.Rotation.multVec(off_p * (1.0 / off_p.Length))
+            uniform = f["scaling"] == "kXYProfileScaling"
+            # Scaled about the line's foot in the sketch: k both ways, or k toward the rail only.
+            m = App.Matrix()
+            m.move(centre * -1)
+            if uniform:
+                m.scale(k, k, 1)
+            else:
+                ang = math.atan2(toward.y, toward.x)
+                m.rotateZ(-ang)
+                m.scale(k, 1, 1)
+                m.rotateZ(ang)
+            m.move(centre)
+            # Made from moved points: a geometry's own transform scales it by the matrix's cube root of the determinant
+            # (a square came out 1.587 times, not 2).
+            for i, g in enumerate(sk.Geometry):
+                if sk.getConstruction(i) or isinstance(g, Part.Point):
+                    continue
+                if isinstance(g, Part.LineSegment):
+                    end.addGeometry(Part.LineSegment(m.multVec(g.StartPoint), m.multVec(g.EndPoint)), False)
+                elif uniform and isinstance(g, Part.ArcOfCircle):
+                    end.addGeometry(Part.ArcOfCircle(Part.Circle(m.multVec(g.Center), V(0, 0, 1), g.Radius * k), g.FirstParameter, g.LastParameter), False)
+                elif uniform and isinstance(g, Part.Circle):
+                    end.addGeometry(Part.Circle(m.multVec(g.Center), V(0, 0, 1), g.Radius * k), False)
+                else:
+                    self.remove(end)
+                    return False    # a curve this can't scale (or a circle scaled one way only, which is no circle)
+            o = self.body.newObject("PartDesign::SubtractiveLoft" if cut else "PartDesign::AdditiveLoft", "Feature")
+            o.Label = f["name"] or o.Name
+            o.Profile = sk
+            o.Sections = [end]
+            o.Ruled = True
+            st["note"] = "a sweep along a straight line with a straight rail, made as a ruled loft to the profile scaled at the far end; that end's sizes are fixed"
+            return o
+        # Twist: the pipe steered by a helix round the line, a quarter of a turn's rise per twist.
+        o = self.body.newObject("PartDesign::SubtractivePipe" if cut else "PartDesign::AdditivePipe", "Feature")
+        o.Label = f["name"] or o.Name
+        o.Profile = sk
+        o.Spine = (path, ["Edge1"])
+        o.Mode = "Auxiliary"
+        helix = self.doc.addObject("Part::Helix", "Helix")
+        helix.Label = "%s twist" % f["name"]
+        helix.Height = line.Length
+        helix.Pitch = line.Length * 360.0 / abs(twist)
+        helix.Radius = 10
+        helix.LocalCoord = 0 if twist > 0 else 1
+        helix.Placement = App.Placement(a, App.Rotation(V(0, 0, 1), d))
+        helix.Visibility = False
+        setattr(o, "AuxiliarySpine" if hasattr(o, "AuxiliarySpine") else "AuxillerySpine", (helix, ["Edge1"]))
+        o.AuxiliaryCurvilinear = True
+        st["note"] = "a sweep along a straight line with a twist, steered by a helix"
+        return o
+
     def sweep(self, f, st):
         """A sweep: FreeCAD's Pipe, the profile along the path. Normal to the path is its Standard mode, parallel to the
         original profile its Fixed mode, a guide rail its Auxiliary mode. It has no taper or twist."""
@@ -1634,6 +1750,9 @@ class Builder:
         sk, _ = self.sketch_for(f)
         # The path's curves alone solid, as drawn: no outline to trim.
         path, _ = self.sketch_for({"sketch": f["path"]["sketch"], "loops": [f["path"]["curves"]], "wires": None, "name": f["name"] + " path"})
+        straight = self.straight_sweep(f, st, sk, path)
+        if straight is not False:
+            return straight
         o = self.body.newObject("PartDesign::SubtractivePipe" if op == "cut" else "PartDesign::AdditivePipe", "Feature")
         o.Label = f["name"] or o.Name
         o.Profile = sk
@@ -1711,6 +1830,10 @@ class Builder:
         why = []
         if f.get("rails"):
             why.append("its %d rail(s) aren't carried" % len(f["rails"]))
+        if f.get("closed") and line is None:
+            # Through three circles round a ring, Inventor's is 6425 mm3 and FreeCAD's 8264 (6821 at degree 2): no
+            # setting of FreeCAD's loft takes Inventor's path between the sections.
+            why.append("closed: FreeCAD's loft takes its own path between the sections, not Inventor's")
         for end in ("first", "last"):
             c = (f.get(end) or {}).get("condition")
             # A sharp point is what FreeCAD's loft makes at a point anyway.
@@ -1858,8 +1981,12 @@ class Builder:
         made = None
         for k, s in enumerate(f["sets"]):
             if s["mode"] == 4:
-                st["status"], st["why"] = "skipped", "fillets on all rounds aren't carried yet"
-                continue
+                # All rounds: every outside edge of the solid as it is here, where faces meet at an angle.
+                if self.body is None or self.body.Tip is None:
+                    st["status"], st["why"] = "skipped", "what it works on wasn't built"
+                    continue
+                s = dict(s, edges=[[r] for r in sharp_edges(self.body.Tip.Shape, convex=True)])
+                st["all_rounds"] = len(s["edges"])
             made = self.fillet_set(f, s, k, st) or made
         return made
 
@@ -2594,18 +2721,41 @@ class Builder:
         """A pattern direction: an origin axis if it runs along one, else a datum line through the origin."""
         return self.axis_datum([0, 0, 0], d, label + " direction")
 
+    @staticmethod
+    def far_edge(shape, a, b, thickness):
+        """The edge a plate's thickness away from a-b, across the plate: on its other face, where solid lies between."""
+        along = (b - a).normalize()
+        mid = (a + b) * 0.5
+        for n in (V(1, 0, 0), V(0, 1, 0), V(0, 0, 1)):
+            for n in (n, n * -1):
+                if abs(n.dot(along)) > 1e-6:
+                    continue
+                for o in (n.cross(along), n.cross(along) * -1):
+                    inward = o * 0.01
+                    if shape.isInside(mid - inward + n * (thickness / 2), 1e-7, False) and not shape.isInside(mid - inward - n * (thickness / 2), 1e-7, False) \
+                            and not shape.isInside(mid - inward + n * (thickness * 1.5), 1e-7, False):
+                        return a + n * thickness, b + n * thickness
+        return None, None
+
     def flange(self, f, st):
-        """A flange at 90 degrees: the plate trimmed back along the edge, which also takes the bend of a flange met at a
+        """A flange: the plate trimmed back along the edge, which also takes the bend of a flange met at a
         corner, then an L section along the edge. Sizes are fixed numbers. The stored edge is already cut short at corners."""
         if self.body is None or self.body.Tip is None or not f["edges"] or not f["edges"][0]:
             st["status"], st["why"] = "skipped", "what it works on wasn't built"
             return None
         e = next((c for c in f["edges"][0] if c.get("kind") == "line"), None)
-        if e is None or f["dir"] != "positive" or abs(f["angle"] - 90) > 1e-6:
-            st["status"], st["why"] = "skipped", "only straight edges, the positive side and 90 degrees are carried"
+        if e is None or f["dir"] not in ("positive", "negative") or not 1e-6 < f["angle"] < 180 - 1e-6 or f["radius"] < 1e-9:
+            st["status"], st["why"] = "skipped", "only straight edges, angles between 0 and 180 degrees and a bend radius are carried"
             return None
         a, b = V(*e["a"]), V(*e["b"])
         shape = self.body.Tip.Shape
+        if f["dir"] == "negative":
+            # Flipped: the flange folds the other way, the mirror through the middle of the plate of the one it would be.
+            # That is the flange from the edge on the plate's far face: move the edge there.
+            a, b = self.far_edge(shape, a, b, f["thickness"])
+            if a is None:
+                st["status"], st["why"] = "skipped", "couldn't find the plate's far face behind the edge"
+                return None
         along = (b - a).normalize()
         mid = (a + b) * 0.5
         # The plate's thickness runs away from the sketched face the edge lies on; the bend goes the other way.
@@ -2635,7 +2785,11 @@ class Builder:
         def ring(points):
             return [Part.LineSegment(points[i], points[(i + 1) % len(points)]) for i in range(len(points))]
         out = R + T
-        band = section("trim", ring([V(-out, T, 0), V(0, T, 0), V(0, -R, 0), V(-out, -R, 0)]))
+        # Bent by theta: the leg's outside runs from the plate's outer corner (0, T) for the height, and the bend
+        # starts (R + T) tan(theta / 2) back from the edge (both seen on a 60 degree flange, and so at 90).
+        theta = math.radians(f["angle"])
+        x0 = -out * math.tan(theta / 2)
+        band = section("trim", ring([V(x0, T, 0), V(0, T, 0), V(0, -R, 0), V(x0, -R, 0)]))
         cut = self.body.newObject("PartDesign::Pocket", "Feature")
         cut.Label = "%s trim" % f["name"]
         cut.Profile = band
@@ -2648,14 +2802,19 @@ class Builder:
             st["status"], st["why"] = "failed", "couldn't trim the plate for the flange"
             self.remove(cut)
             return None
-        c = V(-out, -R, 0)
-        tip = H - out
-        outer = Part.ArcOfCircle(Part.Circle(c, V(0, 0, 1), out), 0, math.pi / 2)
-        inner = Part.ArcOfCircle(Part.Circle(c, V(0, 0, 1), R), 0, math.pi / 2)
-        lines = [Part.LineSegment(V(-out, T, 0), V(-out, 0, 0)),
-                 Part.LineSegment(V(0, -R, 0), V(0, -R - tip, 0)),
-                 Part.LineSegment(V(0, -R - tip, 0), V(-T, -R - tip, 0)),
-                 Part.LineSegment(V(-T, -R - tip, 0), V(-T, -R, 0))]
+        c = V(x0, -R, 0)
+        d = V(math.cos(theta), -math.sin(theta), 0)
+        bent = V(math.sin(theta), math.cos(theta), 0)
+        corner = V(0, T, 0)
+        po, pi = c + bent * out, c + bent * R
+        eo, ei = po + d * (H - (po - corner).dot(d)), pi + d * (H - (pi - corner).dot(d))
+        start = math.pi / 2 - theta
+        outer = Part.ArcOfCircle(Part.Circle(c, V(0, 0, 1), out), start, math.pi / 2)
+        inner = Part.ArcOfCircle(Part.Circle(c, V(0, 0, 1), R), start, math.pi / 2)
+        lines = [Part.LineSegment(V(x0, T, 0), V(x0, 0, 0)),
+                 Part.LineSegment(po, eo),
+                 Part.LineSegment(eo, ei),
+                 Part.LineSegment(ei, pi)]
         sk = section("section", [outer, inner] + lines)
         o2 = self.body.newObject("PartDesign::Pad", "Feature")
         o2.Label = f["name"] or o2.Name
@@ -2664,12 +2823,195 @@ class Builder:
         o2.SideType = "Symmetric"
         o2.Length = a.distanceToPoint(b)
         st["note"] = "sizes are fixed numbers; the bend is an ordinary rounded section"
+        if not hasattr(self, "flanges_made"):
+            self.flanges_made = []
+        # For a corner feature later: the edge on the plate's face, o out of the plate, n into its thickness.
+        self.flanges_made.append({"a": a, "b": b, "o": o, "n": n, "T": T, "R": R, "H": H, "angle": f["angle"], "flipped": f["dir"] == "negative", "name": f["name"]})
         return o2
+
+    def sheet_bend(self, f, st):
+        """A Bend joining two plates at an edge of each: both plates run on to a bend of the given inside radius between
+        them, its centre that radius off the inside face of each. Plates square to each other with parallel edges only."""
+        if self.body is None or self.body.Tip is None:
+            st["status"], st["why"] = "skipped", "what it works on wasn't built"
+            return None
+        lines = [next((c for c in alt if c.get("kind") == "line"), None) for alt in f["edges"]]
+        if len(lines) != 2 or None in lines:
+            st["status"], st["why"] = "skipped", "only a bend between two straight edges is carried"
+            return None
+        shape = self.body.Tip.Shape
+        T, R = f["thickness"], f["radius"]
+        sides = []
+        for e in lines:
+            a, b = V(*e["a"]), V(*e["b"])
+            along = (b - a).normalize()
+            mid = (a + b) * 0.5
+            found = None
+            for n in (V(1, 0, 0), V(0, 1, 0), V(0, 0, 1)):
+                for n in (n, n * -1):
+                    if abs(n.dot(along)) > 1e-6:
+                        continue
+                    for o in (n.cross(along), n.cross(along) * -1):
+                        # The plate lies behind the face the edge is on (-n) and back from its end (-o), further than
+                        # its thickness: an edge is on the plate's end face too, which runs back only T.
+                        if all(shape.isInside(mid - o * d - n * (T / 2), 1e-7, False) and not shape.isInside(mid - o * d + n * (T / 2), 1e-7, False) for d in (0.01, 2 * T + 0.01)) \
+                                and not shape.isInside(mid + o * 0.01 - n * (T / 2), 1e-7, False):
+                            found = (n, o)
+            if found is None:
+                st["status"], st["why"] = "skipped", "couldn't tell which way a plate lies from its edge"
+                return None
+            sides.append((a, b, along, found[0], found[1]))
+        (a1, b1, d1, n1, o1), (a2, b2, d2, n2, o2) = sides
+        if abs(abs(d1.dot(d2)) - 1) > 1e-6 or abs(o1.dot(n2) + 1) > 1e-6 or abs(o2.dot(n1) + 1) > 1e-6:
+            st["status"], st["why"] = "skipped", "only plates square to each other, running toward each other, are carried"
+            return None
+        # The bend's centre: R off the first plate's face (n1) and R off the second's (n2).
+        t = (R - (a1 + n1 * R - a2).dot(n2)) / o1.dot(n2)
+        C = a1 + n1 * R + o1 * t
+        reach2 = (C - a2).dot(o2)
+        if t < -1e-9 or reach2 < -1e-9:
+            st["status"], st["why"] = "skipped", "the plates overlap where the bend would go"
+            return None
+        # Along the edges: where both run.
+        k = [(p - C).dot(d1) for p in (a1, b1)]
+        m = [(p - C).dot(d1) for p in (a2, b2)]
+        lo, hi = max(min(k), min(m)), min(max(k), max(m))
+        if hi - lo < 1e-6:
+            st["status"], st["why"] = "skipped", "the two edges don't run side by side"
+            return None
+        def slab(start, run, length, face_n):
+            # From a plate's edge on to the bend: run * [0, length], thickness behind the face, along the edges [lo, hi].
+            base = start + d1 * (lo - (start - C).dot(d1))
+            q = [base, base + run * length, base + run * length - face_n * T, base - face_n * T]
+            return Part.Face(Part.makePolygon(q + [q[0]])).extrude(d1 * (hi - lo))
+        pieces = []
+        if t > 1e-9:
+            pieces.append(slab(a1, o1, t, n1))
+        if reach2 > 1e-9:
+            pieces.append(slab(a2, o2, reach2, n2))
+        ring = Part.makeCylinder(R + T, hi - lo, C + d1 * lo, d1).cut(Part.makeCylinder(R, hi - lo, C + d1 * lo, d1))
+        quarter = Part.Face(Part.makePolygon([C, C - n1 * (R + T + 1), C - n1 * (R + T + 1) - n2 * (R + T + 1), C - n2 * (R + T + 1), C])).extrude(d1 * (hi - lo + 2))
+        quarter.translate(d1 * (lo - 1))
+        pieces.append(ring.common(quarter))
+        tool = pieces[0]
+        for x in pieces[1:]:
+            tool = tool.fuse(x)
+        want = shape.fuse(tool).removeSplitter()
+        base = self.doc.addObject("Part::Feature", "Bend")
+        base.Label = "%s shape" % f["name"]
+        base.Shape = tool.removeSplitter()
+        base.Visibility = False
+        holder = self.doc.addObject("PartDesign::Body", "Body")
+        holder.Label = "%s tool" % f["name"]
+        holder.BaseFeature = base
+        holder.Visibility = False
+        o = self.body.newObject("PartDesign::Boolean", "Feature")
+        o.Type = "Fuse"
+        o.setObjects([holder])
+        o.Label = f["name"] or o.Name
+        self.body.Tip = o
+        self.doc.recompute()
+        if not self.sound(o) or abs(o.Shape.Volume - want.Volume) > 1e-6 * max(1.0, want.Volume):
+            st["status"], st["why"] = "failed", "FreeCAD couldn't join the bend on"
+            return None
+        st["note"] = "sizes are fixed numbers; the bend is an ordinary rounded piece"
+        return o
+
+    def corner_feature(self, f, st):
+        """Inventor's corner seam where the last two flanges meet, as boxes cut from or added to their legs. Overlap: the
+        second flange's leg runs to the corner and the first's stops a gap short of it; reverse overlap, the other way;
+        no overlap, both stop gap / sqrt(2) short of the inside corner, so the gap across the diagonal is the gap. Where
+        that reaches back into a bend, the bend is cut too. Seen on the test corners at 90 degrees, gap 0.5 and 1 mm."""
+        made = getattr(self, "flanges_made", [])
+        kind, g = f.get("cornerType"), f.get("gap")
+        if len(made) < 2 or g is None or kind not in ("kCornerOverlap", "kCornerReverseOverlap", "kCornerNoOverlap"):
+            st["status"], st["why"] = "skipped", "not carried yet: %s" % (kind or "its corner type wasn't decoded")
+            return None
+        f1, f2 = made[-2], made[-1]
+        if any(abs(x["angle"] - 90) > 1e-6 or x["flipped"] for x in (f1, f2)) or abs(f1["T"] - f2["T"]) > 1e-9 or abs(f1["o"].dot(f2["o"])) > 1e-6:
+            st["status"], st["why"] = "skipped", "only two 90 degree flanges at a square corner are carried"
+            return None
+        T, R = f1["T"], f1["R"]
+        out = R + T
+        # The corner: where the two edges' lines cross, on the plate's face.
+        d1, d2 = (f1["b"] - f1["a"]).normalize(), (f2["b"] - f2["a"]).normalize()
+        w = f2["a"] - f1["a"]
+        P = f1["a"] + d1 * (w.dot(f2["o"]) / d1.dot(f2["o"]))
+        u = f1["n"] * -1            # up the legs, from the plate's face
+        def end(x, other):
+            # How near the corner a flange runs now, along the other's outward direction (0 = the other's outer face).
+            return max((x["a"] - P).dot(other["o"]), (x["b"] - P).dot(other["o"]))
+        e1, e2 = end(f1, f2), end(f2, f1)
+        if kind == "kCornerOverlap":
+            s1, s2 = -T - g, 0.0
+        elif kind == "kCornerReverseOverlap":
+            s1, s2 = 0.0, -T - g
+        else:
+            s1 = s2 = -T - g / math.sqrt(2)
+        H = max(f1["H"], f2["H"]) + 1
+        def box(across, a0, a1, along, b0, b1, c0, c1):
+            # Points P + across * [a0, a1] + along * [b0, b1] + u * [c0, c1].
+            corner = P + across * a0 + along * b0 + u * c0
+            sx, sy = across * (a1 - a0), along * (b1 - b0)
+            face = Part.Face(Part.makePolygon([corner, corner + sx, corner + sx + sy, corner + sy, corner]))
+            return face.extrude(u * (c1 - c0))
+        cuts, adds = [], []
+        for leg, other, e, s in ((f1, f2, e1, s1), (f2, f1, e2, s2)):
+            if s < e - 1e-9:
+                # Cut back: the leg above the bend, and the bend too where the cut reaches into it.
+                into_bend = s < -out + 1e-9
+                width = out if into_bend else T
+                cuts.append(box(leg["o"], -width, 1e-3, other["o"], s, 1e-3, -T - 1e-3 if into_bend else R, H))
+            elif s > e + 1e-9:
+                if e < -out - 1e-9:
+                    st["status"], st["why"] = "skipped", "a flange would have to run on through its bend"
+                    return None
+                adds.append(box(leg["o"], -T, 0, other["o"], e, s, R, leg["H"] - T))   # the leg ends its height from the plate's outer face
+        shape = self.body.Tip.Shape
+        result = shape
+        for c in cuts:
+            result = result.cut(c)
+        for a in adds:
+            result = result.fuse(a)
+        result = result.removeSplitter()
+        if not cuts and not adds:
+            st["status"], st["why"] = "ok", "already as Inventor has it"
+            return None
+        # As PartDesign Booleans with bodies of their own holding the boxes (as a closed shell's hollow is cut).
+        o = None
+        for shapes, cut in ((cuts, True), (adds, False)):
+            if not shapes:
+                continue
+            tool = shapes[0]
+            for x in shapes[1:]:
+                tool = tool.fuse(x)
+            base = self.doc.addObject("Part::Feature", "Corner")
+            base.Label = "%s %s" % (f["name"], "cut" if cut else "added")
+            base.Shape = tool
+            base.Visibility = False
+            holder = self.doc.addObject("PartDesign::Body", "Body")
+            holder.Label = "%s %s tool" % (f["name"], "cut" if cut else "added")
+            holder.BaseFeature = base
+            holder.Visibility = False
+            o = self.body.newObject("PartDesign::Boolean", "Feature")
+            o.Type = "Cut" if cut else "Fuse"
+            o.setObjects([holder])
+            o.Label = "%s %s" % (f["name"], "cut" if cut else "added")
+            self.body.Tip = o
+            self.doc.recompute()
+            if not self.sound(o):
+                st["status"], st["why"] = "failed", "FreeCAD couldn't make the corner seam"
+                return None
+        if abs(self.body.Tip.Shape.Volume - result.Volume) > 1e-6 * max(1.0, result.Volume):
+            st["status"], st["why"] = "failed", "the corner seam came out other than meant"
+            return None
+        st["note"] = "the seam's sizes are fixed numbers"
+        return o
 
     def open_shell(self, f, st):
         """A shell with faces taken away: FreeCAD's Thickness, on the faces lying on the surfaces Inventor names."""
-        if f["direction"] not in ("kInsideShellDirection", "kOutsideShellDirection") or f["sets"] > 1:
-            st["status"], st["why"] = "skipped", "shells to both sides, or with more than one thickness, aren't carried yet"
+        if f["direction"] not in ("kInsideShellDirection", "kOutsideShellDirection", "kBothSidesShellDirection") or f["sets"] > 1:
+            st["status"], st["why"] = "skipped", "shells with more than one thickness aren't carried yet"
             return None
         tip = self.body.Tip
         names = []
@@ -2679,6 +3021,8 @@ class Builder:
                 st["status"], st["why"] = "skipped", "a face it opens wasn't found"
                 return None
             names += [n for n in found if n not in names]
+        if f["direction"] == "kBothSidesShellDirection":
+            return self.shell_both(f, st, tip, names)
         o = self.body.newObject("PartDesign::Thickness", "Feature")
         o.Label = f["name"] or o.Name
         o.Base = (tip, names)
@@ -2692,10 +3036,129 @@ class Builder:
         self.doc.recompute()
         if self.sound(o) and not o.Shape.isNull():
             if f["sets"]:
-                st["status"], st["why"] = "approximate", "faces Inventor gives a thickness of their own have the common one: FreeCAD's Thickness has one"
+                return self.shell_face_sets(f, st, tip, o)
             return o
         self.remove(o)
         st["status"], st["why"] = "failed", "FreeCAD couldn't make the walls"
+        return None
+
+    def shell_face_sets(self, f, st, tip, o):
+        """Faces Inventor gives a thickness of their own: FreeCAD's Thickness has one, so the wall behind each such flat
+        face is made thicker (the hollow filled that much further) or thinner (the hollow run on toward the face), as a
+        fixed shape joined on or cut. Inward shells on flat faces only; otherwise the common thickness stays."""
+        common = self.params.value(f.get("param"), f["thickness"])
+        sets = f.get("faceSets") or []
+        def approximate(why):
+            st["status"], st["why"] = "approximate", "faces Inventor gives a thickness of their own have the common one: " + why
+            return o
+        if f["direction"] != "kInsideShellDirection" or len(sets) != f["sets"] or any(s.get("thickness") is None for s in sets):
+            return approximate("FreeCAD's Thickness has one")
+        base, walls = tip.Shape, o.Shape
+        hollow = base.cut(walls)
+        size = base.BoundBox.DiagonalLength * 2 + 10
+        adds, cuts = [], []
+        for s in sets:
+            t2 = self.params.value(s.get("param"), s["thickness"])
+            for alternatives in s["faces"]:
+                face = next((x for x in base.Faces if any(same_surface(ref, x) for ref in alternatives if ref.get("a"))), None)
+                if face is None or not isinstance(face.Surface, Part.Plane):
+                    return approximate("one of them wasn't found, or isn't flat")
+                n = face.normalAt(*face.Surface.parameter(face.CenterOfMass))
+                if abs(t2 - common) < 1e-9:
+                    continue
+                # The hollow's face across the wall from this one.
+                p = face.CenterOfMass - n * common
+                inner = [x for x in hollow.Faces if isinstance(x.Surface, Part.Plane) and abs(abs(x.Surface.Axis.dot(n)) - 1) < 1e-9 and abs((x.CenterOfMass - p).dot(n)) < 1e-6]
+                if len(inner) != 1:
+                    return approximate("the hollow behind one of them wasn't found")
+                if t2 > common:
+                    # Thicker: fill the hollow that much more, from its face back into it.
+                    u = n.cross(V(1, 0, 0)) if abs(n.x) < 0.9 else n.cross(V(0, 1, 0))
+                    u.normalize()
+                    w = n.cross(u)
+                    q = p - u * size - w * size
+                    square = Part.Face(Part.makePolygon([q, q + u * 2 * size, q + u * 2 * size + w * 2 * size, q + w * 2 * size, q]))
+                    adds.append(hollow.common(square.extrude(n * -(t2 - common))))
+                else:
+                    cuts.append(inner[0].extrude(n * (common - t2)))
+        result = walls
+        for x in adds:
+            result = result.fuse(x)
+        for x in cuts:
+            result = result.cut(x)
+        made = o
+        for shapes, cut in ((adds, False), (cuts, True)):
+            if not shapes:
+                continue
+            tool = shapes[0]
+            for x in shapes[1:]:
+                tool = tool.fuse(x)
+            piece = self.doc.addObject("Part::Feature", "Shell")
+            piece.Label = "%s face set %s" % (f["name"] or "Shell", "cut" if cut else "added")
+            piece.Shape = tool
+            piece.Visibility = False
+            holder = self.doc.addObject("PartDesign::Body", "Body")
+            holder.Label = "%s tool" % piece.Label
+            holder.BaseFeature = piece
+            holder.Visibility = False
+            made = self.body.newObject("PartDesign::Boolean", "Feature")
+            made.Label = piece.Label
+            made.Type = "Cut" if cut else "Fuse"
+            made.setObjects([holder])
+            self.body.Tip = made
+            self.doc.recompute()
+            if not self.sound(made):
+                return approximate("FreeCAD couldn't change their walls")
+        if abs(made.Shape.Volume - result.Volume) > 1e-6 * max(1.0, result.Volume):
+            return approximate("their walls came out other than meant")
+        st["note"] = "the walls of faces with a thickness of their own are fixed shapes"
+        return made
+
+    def shell_both(self, f, st, tip, names):
+        """A shell to both sides: half the thickness each way from the faces, the open faces staying where they are.
+        FreeCAD's Thickness goes one way, so: its wall outward by half, and the inward half from the Part workbench's
+        Thickness on the same faces of the solid before, joined on. Both follow the thickness parameter."""
+        thickness = self.params.value(f.get("param"), f["thickness"])
+        try:
+            faces = [tip.Shape.Faces[int(n[4:]) - 1] for n in names]
+            want = tip.Shape.makeThickness(faces, thickness / 2, 1e-6, False, False, 0, 2).fuse(
+                tip.Shape.makeThickness(faces, -thickness / 2, 1e-6, False, False, 0, 2)).removeSplitter()
+        except Exception:
+            want = None
+        o = self.body.newObject("PartDesign::Thickness", "Feature")
+        o.Label = f["name"] or o.Name
+        o.Base = (tip, names)
+        o.Value = thickness / 2
+        o.Reversed = False
+        o.Join = "Intersection"
+        inner = self.doc.addObject("Part::Thickness", "Thickness")
+        inner.Label = "%s inside half" % (f["name"] or "Shell")
+        inner.Faces = (tip, names)
+        inner.Value = -thickness / 2
+        inner.Join = "Intersection"
+        inner.Visibility = False
+        self.expression(o, "Value", f.get("param"))
+        if o.ExpressionEngine:
+            # The parameter's whole thickness, halved on each side.
+            path, expr = o.ExpressionEngine[0][:2]
+            o.setExpression("Value", "(%s) / 2" % expr)
+            inner.setExpression("Value", "-(%s) / 2" % expr)
+        self.body.Tip = o
+        holder = self.doc.addObject("PartDesign::Body", "Body")
+        holder.Label = "%s inside half tool" % (f["name"] or "Shell")
+        holder.BaseFeature = inner
+        holder.Visibility = False
+        j = self.body.newObject("PartDesign::Boolean", "Feature")
+        j.Label = "%s inside half" % (f["name"] or "Shell")
+        j.Type = "Fuse"
+        j.setObjects([holder])
+        self.body.Tip = j
+        self.doc.recompute()
+        if self.sound(o) and self.sound(j) and not j.Shape.isNull() and (want is None or abs(j.Shape.Volume - want.Volume) < 1e-6 * max(1.0, want.Volume)):
+            return j
+        self.remove(j)
+        self.remove(o)
+        st["status"], st["why"] = "failed", "FreeCAD couldn't make the walls to both sides"
         return None
 
     def shell(self, f, st):
@@ -2799,6 +3262,50 @@ class Builder:
         st["shape"] = "as imported, from the file's B-rep history"
         return None
 
+    def surface_extrude(self, f, st):
+        """An extrude that makes a surface: the Part workbench's Extrusion of the sketch, not solid, beside the body (a
+        PartDesign body holds solids only). A fixed distance only; it changes nothing in the solid."""
+        if f["extent"] != "distance" or f.get("extent2") or f["dir"] not in ("positive", "negative", "symmetric"):
+            st["status"], st["why"] = "skipped", "only surface extrudes by a distance are carried"
+            return None
+        sk, data = self.sketch_for(f)
+        o = self.doc.addObject("Part::Extrusion", "Surface")
+        o.Label = f["name"] or o.Name
+        o.Base = sk
+        o.DirMode = "Normal"
+        o.Solid = False
+        o.LengthFwd = abs(f["length"])
+        self.expression(o, "LengthFwd", f.get("param"))
+        o.Symmetric = f["dir"] == "symmetric"
+        o.Reversed = f["dir"] == "negative"
+        self.doc.recompute()
+        if not o.isValid() or o.Shape.isNull():
+            st["status"], st["why"] = "failed", "FreeCAD couldn't extrude the surface"
+            self.doc.removeObject(o.Name)
+            return None
+        st["shape"] = "a surface beside the body"
+        return None
+
+    def imported_surface(self, f, st):
+        """An imported body Inventor holds as a surface: no history, and the file keeps only its shape now, which is the
+        surface in Inventor's own solid (the STEP written beside this). It goes in beside the bodies as a shape of its
+        own, as FreeCAD keeps surfaces. Only where no other feature makes a surface, to know which it is."""
+        path = os.environ.get("CADCONVERT_STEP")
+        others = [x for x in self.model["features"] if x is not f and (x.get("type") == "imported surface" or x.get("op") == "surface")]
+        if not path or not os.path.exists(path) or others:
+            st["status"], st["why"] = "skipped", "not carried yet: which of the file's surfaces it is isn't known"
+            return None
+        read = Part.read(path)
+        sheets = [s for s in read.Shells if not any(s.isSame(x) for solid in read.Solids for x in solid.Shells)]
+        if not sheets:
+            st["status"], st["why"] = "skipped", "the file's shape has no surface for it"
+            return None
+        o = self.doc.addObject("Part::Feature", "Surface")
+        o.Label = "%s (imported surface)" % (f["name"] or "Surface")
+        o.Shape = sheets[0] if len(sheets) == 1 else Part.makeCompound(sheets)
+        st["shape"] = "the surface as Inventor holds it, beside the bodies"
+        return None
+
     def run(self, f):
         st = {"name": f["name"], "type": f["type"], "status": "ok"}
         report["features"].append(st)
@@ -2817,12 +3324,20 @@ class Builder:
             # The first feature past Inventor's End of Part: the body's result stays where the marker is (end_of_part).
             self.ends[self.body.Name] = (self.body, self.body.Tip)
         makers = {"extrude": self.extrude, "revolve": self.revolve, "fillet": self.fillet, "chamfer": self.chamfer, "hole": self.hole,
-                  "flange": self.flange, "shell": self.shell, "loft": self.loft, "sweep": self.sweep, "mirror": self.transform, "rectangular": self.transform, "circular": self.transform, "sketch": self.transform, "imported body": self.imported}
-        if f["type"] == "sheet metal" and f.get("kind") in ("bend", "corner"):
+                  "flange": self.flange, "shell": self.shell, "loft": self.loft, "sweep": self.sweep, "mirror": self.transform, "rectangular": self.transform, "circular": self.transform, "sketch": self.transform, "imported body": self.imported, "imported surface": self.imported_surface}
+        if f["type"] == "sheet metal" and f.get("kind") in ("bend", "corner") and not f.get("edges"):
             # Inventor keeps these as features of their own; the flange before them already holds their shape.
             if any(x["type"] == "flange" and x["status"] == "ok" for x in report["features"]):
                 st["status"], st["why"] = "cosmetic", "made as part of its flange"
                 return
+        if f["type"] == "sheet metal" and f.get("kind") == "corner feature":
+            makers["sheet metal"] = self.corner_feature
+        if f["type"] == "sheet metal" and f.get("kind") == "bend" and f.get("edges"):
+            makers["sheet metal"] = self.sheet_bend
+        elif f["type"] == "sheet metal" and f.get("kind") == "bend" and "edges" not in f and not any(x["type"] == "flange" for x in report["features"]):
+            # A bend with no edges and no flange before it to own it (a plate joined on makes one): nothing to build.
+            st["status"], st["why"] = "cosmetic", "a bend with no edges of its own"
+            return
         if f["type"] == "thread":
             # A cosmetic thread: it changes nothing in Inventor's solid either.
             st["status"], st["why"] = "cosmetic", "a thread drawn on the surface; the solid is the same without it"
@@ -3339,13 +3854,21 @@ def frozen_solid(doc, builder, result):
     if not path or not os.path.exists(path):
         return
     try:
-        shape = hollows_cut(Part.read(path))
+        read = Part.read(path)
+        # Inventor's surface bodies come as sheets beside the solids: what the rebuild's solid is measured against is
+        # the solids alone (a shell's "volume" would count otherwise).
+        sheets = [s for s in read.Shells if not any(s.isSame(x) for solid in read.Solids for x in solid.Shells)]
+        if sheets and read.Solids:
+            read = read.Solids[0] if len(read.Solids) == 1 else Part.makeCompound(read.Solids)
+        shape = hollows_cut(read)
     except Exception as ex:
         report["step"] = {"error": str(ex)[:200]}
         return
     box = tight_box(shape)
     st = {"valid": shape.isValid(), "volume": shape.Volume, "faces": len(shape.Faces), "solids": len(shape.Solids),
           "bbox": [box.XMin, box.YMin, box.ZMin, box.XMax, box.YMax, box.ZMax]}
+    if sheets:
+        st["sheets"] = len(sheets)
     report["step"] = st
     usable = st["valid"] and st["solids"] > 0 and st["volume"] > 0
     built = [b.Shape for b in builder.bodies if not b.Shape.isNull()]

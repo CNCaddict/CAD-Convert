@@ -31,6 +31,29 @@ namespace InvRe
         // history; MadeState is then the history state that made it, -1 if the file has no such history.
         public bool AsMade;
         public int MadeState = -1;
+        // For each of the part's bodies in order, whether Inventor holds it as a surface body (written as surfaces, not
+        // a solid, even when closed); null: every closed body is a solid.
+        public List<bool> SurfaceBodies;
+
+        // The part's final bodies, from the DC segment's SurfaceBody nodes: +0x0D bit 0x02 marks a final body (the
+        // others are the inputs of imported bodies), bit 0x10 a surface body. In node order they are the B-rep's bodies
+        // in order. Seen on the generated parts: only the two with surfaces (extrude-op/surface, imported/two-blocks)
+        // have 0x10, on the body that is the surface; null if the segment can't be read.
+        public static List<bool> SurfaceFlags(List<Segment> segs)
+        {
+            try
+            {
+                Segment dc = segs.Find(s => s.Name == "PmDCSegment" || s.Name == "AmDcSegment");
+                if (dc == null) return null;
+                NodeTable t = NodeTable.Parse(dc.Meta, dc.Data);
+                List<bool> list = new List<bool>();
+                foreach (Node n in t.Nodes)
+                    if (n.Type != null && n.Type.Key == 0x90874D47 && n.Data != null && n.Data.Length > 0x0D && (n.Data[0x0D] & 0x02) != 0)
+                        list.Add((n.Data[0x0D] & 0x10) != 0);
+                return list.Contains(true) ? list : null;
+            }
+            catch (Exception) { return null; }
+        }
 
         const double Mm = 10;
 
@@ -872,9 +895,12 @@ namespace InvRe
                     if (MadeState < 0) return null;
                     recs = Sab.AsOf(recs, history, MadeState);
                 }
+                int ordinal = -1;
                 foreach (SabRecord b in recs)
                 {
                     if (b == null || b.Type != "body" || (b.Old && !AsMade)) continue;
+                    ordinal++;
+                    bool surface = !AsMade && SurfaceBodies != null && ordinal < SurfaceBodies.Count && SurfaceBodies[ordinal];
                     HashSet<SabRecord> seen = new HashSet<SabRecord>();
                     for (SabRecord lump = At(b.Ref(3)); lump != null && lump.Type == "lump" && seen.Add(lump); lump = At(lump.Ref(3)))
                     {
@@ -882,7 +908,7 @@ namespace InvRe
                         for (SabRecord shell = At(lump.Ref(4)); shell != null && shell.Type == "shell" && seen.Add(shell); shell = At(shell.Ref(3)))
                         {
                             List<KeyValuePair<List<SabRecord>, double[]>> groups = FaceGroups(shell);
-                            if (groups.Count > 1 && groups.TrueForAll(g => Closed(g.Key)))
+                            if (!surface && groups.Count > 1 && groups.TrueForAll(g => Closed(g.Key)))
                             {
                                 // A hollow kept in the outside's shell: each group a closed shell of its own, the one
                                 // with the biggest box (the outside) first, as the solid's outer shell.
@@ -901,7 +927,7 @@ namespace InvRe
                             List<string> faces = ShellFaces(shell);
                             if (faces.Count == 0) continue;
                             string list = "(" + string.Join(",", faces.ToArray()) + ")";
-                            if (Closed(shell)) closed.Add("#" + Add("CLOSED_SHELL(''," + list + ")"));
+                            if (!surface && Closed(shell)) closed.Add("#" + Add("CLOSED_SHELL(''," + list + ")"));
                             else open.Add("#" + Add("OPEN_SHELL(''," + list + ")"));
                         }
                         if (closed.Count == 1)

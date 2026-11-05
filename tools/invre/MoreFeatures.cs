@@ -124,6 +124,10 @@ namespace InvRe
             public double ThicknessCm = double.NaN;
             public List<int> Removed = new List<int>();
             public List<KeyValuePair<string, int>> Sets = new List<KeyValuePair<string, int>>();   // thickness, face count
+            // Each face set: its thickness (cm, NaN if unknown), the parameter, and the faces.
+            public List<double> SetCm = new List<double>();
+            public List<string> SetParams = new List<string>();
+            public List<List<int>> SetFaces = new List<List<int>>();
 
             public override string Get(string key)
             {
@@ -161,9 +165,16 @@ namespace InvRe
                     Node n = t.At(set);
                     if (n == null || n.Data == null) continue;
                     int h = 0x22 + Sketches.Shift(n.Data);
-                    string thick;
+                    string thick, param;
+                    double cm;
                     formulas.TryGetValue(Sketches.XRef(n.Data, h + 4), out thick);
-                    sh.Sets.Add(new KeyValuePair<string, int>(thick, Items(t, Sketches.XRef(n.Data, h)).Count));
+                    paramNames.TryGetValue(Sketches.XRef(n.Data, h + 4), out param);
+                    if (!values.TryGetValue(Sketches.XRef(n.Data, h + 4), out cm)) cm = double.NaN;
+                    List<int> faces = Items(t, Sketches.XRef(n.Data, h));
+                    sh.Sets.Add(new KeyValuePair<string, int>(thick, faces.Count));
+                    sh.SetCm.Add(cm);
+                    sh.SetParams.Add(param);
+                    sh.SetFaces.Add(faces);
                 }
                 list.Add(sh);
             }
@@ -521,7 +532,7 @@ namespace InvRe
         //    similar: not told apart), +0x2E 2B3E0C72, +0x32 AFD8A8E0 corner type, +0x36 2B3E0C72, +0x3A parameter, +0x42 Boolean.
         // Corner feature the API does list (9F98DF82) slots: 0 AFD8A8E0 corner type (3 no overlap, 6 overlap)   1 Boolean: the overlap reversed
         //    2 thickness   3 gap   4 parameter   5 EdgeCollection   7, 8, 10, 14, 15 Boolean   12 relief size   13 2B3E0C72 relief shape   18 parameter.
-        public const uint Plate = 0x55585FC6, Bend = 0x4CF758F2, Corner = 0x6880587F, ListedCorner = 0x9F98DF82, Imported = 0x0CA9112D, Composite = 0xC2C74308;
+        public const uint Plate = 0x55585FC6, Bend = 0x4CF758F2, Corner = 0x6880587F, ListedCorner = 0x9F98DF82, Imported = 0x0CA9112D, Composite = 0xC2C74308, ImportedSurface = 0xE34D8F79;
         static string CornerType(int value, bool reversed)
         {
             return value == 3 ? "kCornerNoOverlap" : value == 6 ? (reversed ? "kCornerReverseOverlap" : "kCornerOverlap") : "corner type " + value;
@@ -538,7 +549,7 @@ namespace InvRe
             public int Edges = -1;
             public int SketchNode = -1, ProfileNode = -1;   // a plate's
             public string ThicknessParam;
-            public double ThicknessCm = double.NaN, HeightCm = double.NaN, AngleRad = double.NaN, RadiusCm = double.NaN;
+            public double ThicknessCm = double.NaN, HeightCm = double.NaN, AngleRad = double.NaN, RadiusCm = double.NaN, GapCm = double.NaN;
             public string Alias;  // the API's name for a flange (Flange1, ...): numbered apart from the plates
 
             public override string Get(string key)
@@ -606,6 +617,10 @@ namespace InvRe
                         formulas.TryGetValue(Sketches.XRef(fl.Data, 0x22 + h), out x.Angle);
                         formulas.TryGetValue(Sketches.XRef(fl.Data, 0x62 + h), out x.Radius);
                         x.Direction = Named(PlateDirections, EnumValue(t, Sketches.XRef(fl.Data, 0x87 + h)));
+                        // +0x2A: a Boolean set when the flange is flipped to the other side (the API's
+                        // kNegativeExtentDirection in SetDistanceHeightExtent); the enum at +0x87 stays positive.
+                        if (Flag(t, Sketches.XRef(fl.Data, 0x2A + h)))
+                            x.Direction = x.Direction == "kNegativeExtentDirection" ? "kPositiveExtentDirection" : "kNegativeExtentDirection";
                         if (!values.TryGetValue(Sketches.XRef(fl.Data, 0x1E + h), out x.HeightCm)) x.HeightCm = double.NaN;
                         if (!values.TryGetValue(Sketches.XRef(fl.Data, 0x22 + h), out x.AngleRad)) x.AngleRad = double.NaN;
                         if (!values.TryGetValue(Sketches.XRef(fl.Data, 0x62 + h), out x.RadiusCm)) x.RadiusCm = double.NaN;
@@ -627,6 +642,8 @@ namespace InvRe
                     x.Kind = "bend";
                     formulas.TryGetValue(Slot(s, 1), out x.Radius);
                     formulas.TryGetValue(Slot(s, 2), out x.Thickness);
+                    if (!values.TryGetValue(Slot(s, 1), out x.RadiusCm)) x.RadiusCm = double.NaN;
+                    if (!values.TryGetValue(Slot(s, 2), out x.ThicknessCm)) x.ThicknessCm = double.NaN;
                     x.Edges = Items(t, Slot(s, 0)).Count;
                 }
                 else if (fi.Kind == ListedCorner)
@@ -634,6 +651,7 @@ namespace InvRe
                     x.Kind = "corner feature";
                     x.CornerType = CornerType(EnumValue(t, Slot(s, 0)), Flag(t, Slot(s, 1)));
                     formulas.TryGetValue(Slot(s, 3), out x.Gap);
+                    if (!values.TryGetValue(Slot(s, 3), out x.GapCm)) x.GapCm = double.NaN;
                 }
                 else
                 {
@@ -661,14 +679,16 @@ namespace InvRe
         }
 
         // Imported bodies (0CA9112D; the API's non-parametric base features): slots 0 and 1 SurfaceBody, 2 Boolean. No
-        // parameters or history: the shape is only in the B-rep. Composite (C2C74308): imported surfaces.
+        // parameters or history: the shape is only in the B-rep. Composite (C2C74308): imported surfaces. E34D8F79: an
+        // imported body Inventor holds as a surface (the API's non-parametric base feature with IsSolid false; seen on
+        // imported/two-blocks, the second block).
         public class ImportedInfo : Features.FeatureInfo
         {
             public string Kind;
             public override string Get(string key)
             {
                 if (key == "isSolid") return B(Kind == "imported body");
-                if (key == "isComposite") return B(Kind != "imported body");
+                if (key == "isComposite") return B(Kind == "imported surfaces");
                 return null;
             }
         }
@@ -677,8 +697,8 @@ namespace InvRe
         {
             List<ImportedInfo> list = new List<ImportedInfo>();
             foreach (Features.Info fi in Features.List(t))
-                if (fi.Kind == Imported || fi.Kind == Composite)
-                    list.Add(new ImportedInfo { Index = fi.Node.Index, Name = fi.Name, Kind = fi.Kind == Imported ? "imported body" : "imported surfaces" });
+                if (fi.Kind == Imported || fi.Kind == Composite || fi.Kind == ImportedSurface)
+                    list.Add(new ImportedInfo { Index = fi.Node.Index, Name = fi.Name, Kind = fi.Kind == Imported ? "imported body" : fi.Kind == Composite ? "imported surfaces" : "imported surface" });
             return list;
         }
 

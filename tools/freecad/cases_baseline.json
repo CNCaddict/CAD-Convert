@@ -332,20 +332,16 @@
   "volume_off": 0.0
  },
  "extrude-op-surface": {
-  "bad": [
-   "ExtrusionSrf1: skipped"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.07003353082354109
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
  },
  "fillet-all-rounds": {
-  "bad": [
-   "Fillet1: skipped"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.041929221058781906
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.083608481425615e-08
  },
  "fillet-ball-grooves": {
   "bad": [],
@@ -754,12 +750,10 @@
   "volume_off": 2.1758246453897805e-16
  },
  "imported-two-blocks": {
-  "bad": [
-   "Surface1: skipped"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.5
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
  },
  "loft-angle": {
   "bad": [
@@ -776,7 +770,9 @@
   "volume_off": 0.0004950278268472892
  },
  "loft-closed": {
-  "bad": [],
+  "bad": [
+   "Loft1: approximate"
+  ],
   "kind": "differs",
   "surface_far": null,
   "volume_off": 0.2861374788241479
@@ -1104,42 +1100,31 @@
   "volume_off": 1.447505775030507e-16
  },
  "sheet-bend": {
-  "bad": [
-   "Bend2: skipped",
-   "Bend1: skipped"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.11429280486881298
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.4166380038819286e-15
  },
  "sheet-corner": {
-  "bad": [
-   "Corner3: skipped"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.004333242088283113
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 5.866843706822598e-16
  },
  "sheet-corner-gap": {
-  "bad": [
-   "Corner3: skipped"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.008863678672387647
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.6519887765333178e-15
  },
  "sheet-corner-overlap": {
-  "bad": [
-   "Corner3: skipped"
-  ],
-  "kind": "differs",
-  "surface_far": 0.030303030303030304,
-  "volume_off": 2.9207654695486456e-16
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 5.841530939097291e-16
  },
  "sheet-corner-reverse": {
-  "bad": [
-   "Corner3: skipped"
-  ],
+  "bad": [],
   "kind": "match",
   "surface_far": 0.0,
   "volume_off": 1.1683061878194573e-15
@@ -1151,26 +1136,22 @@
   "volume_off": 0.0
  },
  "sheet-flange-angle": {
-  "bad": [
-   "Plate2: skipped",
-   "Bend1: skipped",
-   "Corner1: skipped"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.3292045608532692
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.1439091835201185e-15
  },
  "sheet-flange-height": {
   "bad": [],
   "kind": "match",
   "surface_far": 0.0,
-  "volume_off": 6.573574136844303e-16
+  "volume_off": 3.2867870684221517e-16
  },
  "sheet-flange-reversed": {
   "bad": [],
-  "kind": "differs",
-  "surface_far": 0.5972222222222222,
-  "volume_off": 5.763289612916881e-16
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.344767576347272e-15
  },
  "sheet-hole": {
   "bad": [],
@@ -1191,20 +1172,16 @@
   "volume_off": 0.0
  },
  "shell-both": {
-  "bad": [
-   "Shell1: skipped"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 2.330557868442965
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 3.786405919121268e-16
  },
  "shell-face-set": {
-  "bad": [
-   "Shell1: approximate"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.13001605136436623
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.8248288558846884e-16
  },
  "shell-inside": {
   "bad": [],
@@ -1447,28 +1424,22 @@
   "volume_off": 5.329070518200749e-16
  },
  "sweep-rail": {
-  "bad": [
-   "Sweep1: approximate"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.5714285714285714
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 2.0301221021717152e-16
  },
  "sweep-taper": {
-  "bad": [
-   "Sweep1: approximate"
-  ],
-  "kind": "differs",
-  "surface_far": null,
-  "volume_off": 0.3809088585279014
+  "bad": [],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 1.4663023778214274e-16
  },
  "sweep-twist": {
-  "bad": [
-   "Sweep1: approximate"
-  ],
+  "bad": [],
   "kind": "differs",
   "surface_far": null,
-  "volume_off": 0.0010391749734657328
+  "volume_off": 0.001039176604485962
  },
  "thread-depth": {
   "bad": [],

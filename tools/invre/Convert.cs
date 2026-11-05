@@ -103,12 +103,24 @@ namespace InvRe
         class Finder
         {
             readonly Dictionary<string, string> byName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            readonly Dictionary<string, string> beside = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            public Finder(string root)
+            // siblings: the folder holding the root; the folders in it are searched at their top level only, after the
+            // root, for parts kept in a folder beside the assembly's (as the test assemblies' parts are).
+            public Finder(string root, string siblings = null)
             {
                 foreach (string pattern in new[] { "*.ipt", "*.iam" })
                     foreach (string f in Directory.GetFiles(root, pattern, SearchOption.AllDirectories))
                         if (f.IndexOf("OldVersions", StringComparison.OrdinalIgnoreCase) < 0 && !byName.ContainsKey(Path.GetFileName(f))) byName[Path.GetFileName(f)] = f;
+                if (siblings == null) return;
+                try
+                {
+                    foreach (string dir in Directory.GetDirectories(siblings))
+                        foreach (string pattern in new[] { "*.ipt", "*.iam" })
+                            foreach (string f in Directory.GetFiles(dir, pattern, SearchOption.TopDirectoryOnly))
+                                if (!beside.ContainsKey(Path.GetFileName(f))) beside[Path.GetFileName(f)] = f;
+                }
+                catch (Exception) { }   // a folder that can't be read: its parts stay not found
             }
 
             public string Locate(string stored)
@@ -118,7 +130,7 @@ namespace InvRe
                 Segment.Inside(stored, out outer);
                 if (File.Exists(outer)) return stored;
                 string name = outer.Substring(outer.LastIndexOfAny(new[] { '\\', '/' }) + 1);
-                return byName.TryGetValue(name, out path) ? path + stored.Substring(outer.Length) : null;
+                return byName.TryGetValue(name, out path) || beside.TryGetValue(name, out path) ? path + stored.Substring(outer.Length) : null;
             }
         }
 
@@ -300,7 +312,7 @@ namespace InvRe
             string above = Path.GetDirectoryName(folder);
             // Parts may sit beside it or one level up, but never search a whole drive or the user's Desktop root.
             string root = above != null && Directory.GetFiles(above, "*.iam").Length + Directory.GetFiles(above, "*.ipt").Length > 0 ? above : folder;
-            return ConvertAssembly(file, outDir, log, new Finder(root), new HashSet<string>(), solidCraft);
+            return ConvertAssembly(file, outDir, log, new Finder(root, root == folder ? above : null), new HashSet<string>(), solidCraft);
         }
 
         public static string FindSolidCraft()
@@ -377,7 +389,7 @@ namespace InvRe
         {
             List<Segment> segs = Segment.ReadAll(file);
             Segment solid = segs.Find(s => string.Equals(s.Name, "PmBRepSegment", StringComparison.OrdinalIgnoreCase));
-            StepWriter sw = new StepWriter();
+            StepWriter sw = new StepWriter { SurfaceBodies = StepWriter.SurfaceFlags(segs) };
             string stepText = null;
             try { if (solid != null) stepText = sw.Write(solid.Data, name); }
             catch (Exception ex) { log.WriteLine("  STEP not written: " + ex.Message); }
@@ -427,8 +439,9 @@ namespace InvRe
         // A part's solid for the viewer, before any conversion. Returns why not, or null.
         public static string Preview(string file, string view)
         {
-            Segment solid = Segment.ReadAll(file).Find(s => string.Equals(s.Name, "PmBRepSegment", StringComparison.OrdinalIgnoreCase));
-            string text = solid == null ? null : new StepWriter().Write(solid.Data, Base(file));
+            List<Segment> segs = Segment.ReadAll(file);
+            Segment solid = segs.Find(s => string.Equals(s.Name, "PmBRepSegment", StringComparison.OrdinalIgnoreCase));
+            string text = solid == null ? null : new StepWriter { SurfaceBodies = StepWriter.SurfaceFlags(segs) }.Write(solid.Data, Base(file));
             if (text == null) return "there's no solid in this file";
             view = Path.GetFullPath(view);
             string step = view + ".step";
@@ -570,8 +583,9 @@ namespace InvRe
                 string outFile = Path.GetFullPath(Path.Combine(outDir, i + " " + Path.GetFileNameWithoutExtension(f) + ".step"));
                 try
                 {
-                    Segment brep = Segment.ReadAll(f).Find(s => string.Equals(s.Name, "PmBRepSegment", StringComparison.OrdinalIgnoreCase));
-                    StepWriter w = new StepWriter();
+                    List<Segment> segs = Segment.ReadAll(f);
+                    Segment brep = segs.Find(s => string.Equals(s.Name, "PmBRepSegment", StringComparison.OrdinalIgnoreCase));
+                    StepWriter w = new StepWriter { SurfaceBodies = StepWriter.SurfaceFlags(segs) };
                     string text = brep == null ? null : w.Write(brep.Data, Path.GetFileNameWithoutExtension(f));
                     if (text == null) { none++; log.WriteLine("no solid   " + f.Substring(dir.Length)); continue; }
                     File.WriteAllText(outFile, text, new UTF8Encoding(false));
