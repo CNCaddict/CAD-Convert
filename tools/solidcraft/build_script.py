@@ -544,9 +544,11 @@ def outer_loops(loops, curves):
 class Script:
     # hollow: (STEP file, [body names in it]) of the void inside Inventor's solid, for a closed shell; measure(point,
     # direction): how far from the point Inventor's solid's next face lies that way, or None (see build_part.py).
-    def __init__(self, model, hollow=None, measure=None):
+    def __init__(self, model, hollow=None, measure=None, solid=None, made=None):
         self.m, self.left, self.out = model, [], []
         self.hollow, self.measure = hollow, measure
+        # Inventor's solid (STEP), and the first imported body as it was imported (….made.step), where there are.
+        self.solid, self.made = solid, made
         self.sketches = {s["id"]: s for s in model["sketches"]}
         self.bodies = []
         self.names = {}
@@ -653,6 +655,10 @@ class Script:
         op = self.operation(f)
         if op is None:
             return "extrude kind %s not carried" % f["op"]
+        # SolidCraft's sheet metal only where flanges follow: a flat plate with holes and rounds after it (two real
+        # parts) went wrong as a sheet body (78% and 14% off) and is right as an extrude.
+        if f.get("sheet") and op == "new" and f["extent"] == "distance" and any(x.get("type") == "flange" for x in self.m["features"]):
+            return self.plate(f)
         f = socket(f) or f
         name = self.sketch(f)
         p = {"sketch": name, "profiles": self.profile(f), "operation": op, "name": f["name"]}
@@ -833,13 +839,83 @@ class Script:
         self.cmd("solid.combine", target=self.bodies[-1], tools=names, operation="cut", name=f["name"])
         self.approximate(f, "SolidCraft's shell needs a face removed: the hollow is Inventor's, at a fixed size")
 
+    def plate(self, f):
+        # Sheet metal: SolidCraft's own, so its flanges, bends and corners follow its rule as Inventor's follow the part's
+        # style. The rule takes the plate's thickness, the part's bend radius and the gap where flanges meet at a corner
+        # (fixed numbers; on the generated sheet parts SolidCraft's flanges at 90 and 60 degrees, flipped, and two
+        # meeting at a corner gave Inventor's volumes to 0.0002 mm3 with its defaults).
+        thickness = abs(f.get("length") or 0)
+        radius = self.values.get("BendRadius", thickness)
+        rule = {"name": "Inventor", "thickness": "%.6f mm" % thickness, "bend_radius": "%.6f mm" % radius, "active": True}
+        if self.values.get("GapSize") is not None:
+            rule["gap"] = "%.6f mm" % self.values["GapSize"]
+        self.cmd("sheet.manage_rules", **rule)
+        name = self.sketch(f)
+        p = {"type": "base", "sketch": name, "name": f["name"], "body_name": self.body_name()}
+        profiles = self.profile(f)
+        if profiles is not None:
+            p["profiles"] = profiles
+        n = self.normal(f["sketch"])
+        axis = f.get("axis") or n
+        along = [-x for x in axis] if f["dir"] == "negative" else axis
+        if sum(a * b for a, b in zip(along, n)) < 0:
+            p["flip"] = True
+        self.cmd("sheet.flange", **p)
+        self.sheet = True
+        self.approximate(f, "sheet metal as SolidCraft's: thickness and bend radius are its rule's, fixed numbers")
+        return None
+
+    def flange(self, f):
+        if not getattr(self, "sheet", False):
+            return "flange not carried: no sheet metal plate before it"
+        e = next((c for c in (f.get("edges") or [[]])[0] if c.get("kind") == "line"), None)
+        if e is None:
+            return "flange not carried: only straight edges"
+        mid = [(a + b) / 2 for a, b in zip(e["a"], e["b"])]
+        p = {"edges": [mid], "height": "%.6f mm" % f["height"], "angle": "%.6f deg" % f["angle"], "name": f["name"]}
+        if f["dir"] == "negative":
+            p["flip"] = True
+        self.cmd("sheet.flange", **p)
+        return None
+
+    def sheet_metal(self, f):
+        kind = f.get("kind")
+        if kind in ("bend", "corner") and not f.get("edges"):
+            return None if getattr(self, "sheet", False) else "sheet metal not carried"
+        if kind == "corner feature":
+            if f.get("cornerType") != "kCornerReverseOverlap":
+                self.approximate(f, "corner %s isn't carried: SolidCraft closes flanges that meet at a corner its own way" % (f.get("cornerType") or "?"))
+            return None
+        return "sheet metal %s not carried" % (kind or "feature")
+
+    def imported(self, f):
+        # An imported body has no history: its shape comes in as SolidCraft's Import base feature. A part of imported
+        # bodies only, with nothing after them, is Inventor's solid now (as the FreeCAD build takes it); otherwise the
+        # first body as imported, which the file keeps, with the features after it built on it.
+        imports = [x for x in self.m["features"] if x.get("type") in ("imported body", "imported surface")]
+        only = all(x.get("type") in ("imported body", "imported surface") for x in self.m["features"] if x.get("computed", True))
+        if only and self.solid:
+            if f is not imports[0]:
+                return None     # brought in with the first
+            self.cmd("file.insert_step", path=self.solid, name=f["name"] or "Imported", names="solid")
+            return None
+        if f.get("made") and self.made and not self.out_has_solid():
+            self.cmd("file.insert_step", path=self.made, name=f["name"] or "Imported", names="solid")
+            self.approximate(f, "brought in as imported; the features after it may not find it as their body")
+            return None
+        return "imported body not carried: the file keeps no shape of it as imported"
+
+    def out_has_solid(self):
+        return any(c["command"].startswith("solid.") or c["command"].startswith("sheet.") for c in self.out)
+
     def approximate(self, f, why):
         # Carried, but not as Inventor has it: noted, not left out.
         self.left.append({"feature": f["name"], "why": why, "approximate": True})
 
     def build(self):
         self.params()
-        makers = {"extrude": self.extrude, "revolve": self.revolve, "hole": self.hole, "chamfer": self.chamfer, "fillet": self.fillet, "mirror": self.mirror, "circular": self.circular, "rectangular": self.rectangular, "shell": self.shell}
+        makers = {"extrude": self.extrude, "revolve": self.revolve, "hole": self.hole, "chamfer": self.chamfer, "fillet": self.fillet, "mirror": self.mirror, "circular": self.circular, "rectangular": self.rectangular, "shell": self.shell,
+                  "imported body": self.imported, "imported surface": self.imported, "flange": self.flange, "sheet metal": self.sheet_metal}
         for f in self.m["features"]:
             # Past Inventor's End of Part: not in its solid, and SolidCraft has no marker to keep them behind.
             if not f["computed"] or f["type"] == "thread" or f.get("rolledBack"):
@@ -1189,11 +1265,11 @@ def rescue(session, s, c, base, done, budget):
     return n_done if n_done else None
 
 
-def build(model, base, change=None, seconds=360, hollow=None, measure=None):
+def build(model, base, change=None, seconds=360, hollow=None, measure=None, solid=None, made=None):
     """Writes base.sc and base.step if SolidCraft ends up with a solid. Returns whether it did, and what was left out.
     A command SolidCraft refuses is tried with its alternatives, else left out (a sketch's rule or dimension leaves the
     part less tied down; a feature leaves it short), and the rest go on."""
-    s = Script(model, hollow, measure)
+    s = Script(model, hollow, measure, solid, made)
     commands = s.build()
     if change:
         name, factor = change.split("=")
@@ -1201,7 +1277,7 @@ def build(model, base, change=None, seconds=360, hollow=None, measure=None):
             if c["command"] == "parameters.add" and c["params"]["name"] == name:
                 c["params"]["expression"] = "(%s) * %s" % (c["params"]["expression"], factor)
     started = time.time()
-    folders = {os.path.dirname(os.path.abspath(base))} | ({os.path.dirname(os.path.abspath(hollow[0]))} if hollow else set())
+    folders = {os.path.dirname(os.path.abspath(base))} | ({os.path.dirname(os.path.abspath(hollow[0]))} if hollow else set())         | {os.path.dirname(os.path.abspath(p)) for p in (solid, made) if p}
     session = Session(sorted(folders))
     done = []
     built = False

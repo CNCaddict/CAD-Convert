@@ -183,7 +183,9 @@ def main():
     result = {"name": model["name"], "outcome": "none", "notes": [], "rebuild": None, "solid": None, "left": []}
     inventor = Part.read(step) if step and os.path.exists(step) else None
     try:
-        built, result["left"] = build_script.build(model, base, hollow=hollow_of(model, inventor, base), measure=measurer(inventor)) if model.get("features") else (False, [])
+        made = os.environ["CADCONVERT_MODEL"][:-len(".model.json")] + ".made.step" if os.environ["CADCONVERT_MODEL"].endswith(".model.json") else None
+        built, result["left"] = build_script.build(model, base, hollow=hollow_of(model, inventor, base), measure=measurer(inventor),
+                                                   solid=step, made=made if made and os.path.exists(made) else None) if model.get("features") else (False, [])
     except subprocess.TimeoutExpired:
         built = False
         result["notes"].append("SolidCraft ran out of time rebuilding its history")
