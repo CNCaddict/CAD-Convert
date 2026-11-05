@@ -165,7 +165,10 @@ namespace InvRe
                 V("taper", Block(kCutOperation, (def, doc) => {
                     def.SetDistanceExtent("5 mm", kPositiveExtentDirection);
                     def.TaperAngle = "5 deg";
-                })) };
+                })),
+                // A boss joined down to the next face with a taper, which FreeCAD's pad up to a face drops.
+                V("to-next-taper", (app, doc) => TaperBoss(app, doc, false)),
+                V("to-next-taper-slant", (app, doc) => TaperBoss(app, doc, true)) };
 
             // A 5 x 5 mm square (x 5..10, y 0..5 mm) on the XY plane revolved about the Y axis, one setting changed.
             x["revolve"] = new List<Variant> {
@@ -1280,6 +1283,35 @@ namespace InvRe
                 operation == kSurfaceOperation ? circle.Profiles.AddForSurface() : circle.Profiles.AddForSolid(), operation);
             extent(def, doc);
             features.Add(def);
+        }
+
+        // The 20 x 20 x 10 mm block of OnBlock (with slant, its top edge at y = 10 mm chamfered 8 mm, a face sloping 45
+        // deg), then a 4 mm circle at (0, 6 mm) on a plane 25 mm up, joined down to the next face with a 3 deg taper.
+        static void TaperBoss(dynamic app, dynamic doc, bool slant)
+        {
+            dynamic features = doc.ComponentDefinition.Features;
+            dynamic sk = NewSketch(doc);
+            sk.SketchLines.AddAsTwoPointRectangle(P(app, -1, -1), P(app, 1, 1));
+            dynamic block = features.ExtrudeFeatures.CreateExtrudeDefinition(sk.Profiles.AddForSolid(), kJoinOperation);
+            block.SetDistanceExtent("10 mm", kPositiveExtentDirection);
+            features.ExtrudeFeatures.Add(block);
+            if (slant)
+            {
+                dynamic edge = null;
+                foreach (dynamic e in FaceAt(doc, 1.0).Edges)
+                {
+                    dynamic a = e.StartVertex.Point, b = e.StopVertex.Point;
+                    if (Math.Abs((double)a.Y - (double)b.Y) < 1e-6 && (double)a.Y > 0.5) edge = e;
+                }
+                if (edge == null) throw new Exception("no top edge at y = 10 mm");
+                features.ChamferFeatures.AddUsingDistance(EdgeSet(app, edge), "8 mm");
+            }
+            dynamic up = doc.ComponentDefinition.Sketches.Add(OffsetPlane(doc, "25 mm"));
+            up.SketchCircles.AddByCenterRadius(P(app, 0, 0.6), 0.2);
+            dynamic def = features.ExtrudeFeatures.CreateExtrudeDefinition(up.Profiles.AddForSolid(), kJoinOperation);
+            def.SetToNextExtent(kNegativeExtentDirection, doc.ComponentDefinition.SurfaceBodies[1]);
+            def.TaperAngle = "3 deg";
+            features.ExtrudeFeatures.Add(def);
         }
 
         // A square slab centred on the origin: half its side in cm, its thickness extruded symmetric about the XY plane.

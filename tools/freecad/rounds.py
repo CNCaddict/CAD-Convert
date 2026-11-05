@@ -923,6 +923,64 @@ def edge_matches(ref, e, shape, tol=1e-3):
     return False
 
 
+def curve_chain(ref, shape, tol=1e-3):
+    """Inventor's curve edge (known by its ends; a closed one by one point on it) as a run of FreeCAD edges, where FreeCAD
+    has split it: curved edges end to end between the same two faces, from one end to the other (a closed one all the way
+    round). The shortest such run, as names, or [] if there's none."""
+    if ref.get("kind") != "curve" or not ref.get("a") or not ref.get("b"):
+        return []
+    a, b = V(*ref["a"]), V(*ref["b"])
+    closed = a.distanceToPoint(b) < tol
+    edges = shape.Edges
+
+    def straight(e):
+        try:
+            return isinstance(e.Curve, Part.Line)
+        except Exception:
+            return False
+
+    def same_pair(x, y):
+        return len(x) == 2 and len(y) == 2 and all(any(f.isSame(g) for g in y) for f in x)
+
+    def walk(i, here, goal):
+        faces = shape.ancestorsOfType(edges[i], Part.Face)
+        if len(faces) != 2:
+            return None
+        chain = [i]
+        while len(chain) < 50:
+            if here.distanceToPoint(goal) < tol:
+                return chain
+            nxt = [k for k, e in enumerate(edges) if k not in chain and len(e.Vertexes) == 2 and not straight(e)
+                   and any(v.Point.distanceToPoint(here) < tol for v in e.Vertexes) and same_pair(shape.ancestorsOfType(e, Part.Face), faces)]
+            if len(nxt) != 1:
+                return None
+            chain.append(nxt[0])
+            ps = [v.Point for v in edges[nxt[0]].Vertexes]
+            here = ps[1] if ps[0].distanceToPoint(here) < tol else ps[0]
+        return None
+
+    best = None
+    for i, e0 in enumerate(edges):
+        if len(e0.Vertexes) != 2 or straight(e0):
+            continue
+        ends = [v.Point for v in e0.Vertexes]
+        if closed:
+            if e0.distToShape(Part.Vertex(a))[0] >= tol:
+                continue
+            chain = walk(i, ends[1], ends[0])
+        elif ends[0].distanceToPoint(a) < tol:
+            chain = walk(i, ends[1], b)
+        elif ends[1].distanceToPoint(a) < tol:
+            chain = walk(i, ends[0], b)
+        else:
+            continue
+        if chain and len(chain) > 1:
+            length = sum(edges[k].Length for k in chain)
+            if best is None or length < best[0] - 1e-9:
+                best = (length, chain)
+    return ["Edge%d" % (k + 1) for k in best[1]] if best else []
+
+
 def same_surface(want, face, tol=1e-3):
     s = face.Surface
     a = V(*want["a"]) if want.get("a") else None

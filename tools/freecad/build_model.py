@@ -6,7 +6,7 @@ import FreeCAD as App
 import Part, Sketcher
 import sys
 sys.path.insert(0, os.environ.get("CADCONVERT_TOOLS") or os.path.dirname(os.path.abspath(__file__)))
-from rounds import probe, holes_to_reopen, section_curve, ball_center, round_profile, revolved_round, ball_ends, merged_round, collide, merged_profile, edge_matches, same_surface
+from rounds import probe, holes_to_reopen, section_curve, ball_center, round_profile, revolved_round, ball_ends, merged_round, collide, merged_profile, edge_matches, curve_chain, same_surface
 
 V = App.Vector
 LENGTH_UNITS = {"mm", "cm", "m", "km", "in", "ft", "yd", "mil", "micron", "nm", "um"}
@@ -151,6 +151,13 @@ class Parameters:
 
 
 # ---------------------------------------------------------------- sketches
+
+def is_line(e):
+    try:
+        return isinstance(e.Curve, Part.Line)
+    except Exception:   # a curve type FreeCAD's Python side can't represent
+        return False
+
 
 def matrix_of(m):
     return App.Matrix(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15])
@@ -1415,7 +1422,66 @@ class Builder:
                     o.TaperAngle2 = -value
                     if ref:
                         o.setExpression("TaperAngle2", "-(%s)" % ref)
+                if value and o.Type in ("UpToFirst", "UpToFace") and o.SideType == "One side":
+                    self.taper_up_to(o, m, along, cut, st)
         return o
+
+    def taper_up_to(self, o, m, along, cut, st):
+        """FreeCAD drops a taper on a pad or pocket that runs up to a face: its wall comes out straight. Where the face it
+        stops on is flat, a tapered length that reaches the plane at its deepest point does the same, as long as what it
+        runs on into past the plane is already solid (a join) or already empty (a cut). Else the taper stays dropped."""
+        self.body.Tip = o
+        self.doc.recompute()
+        base = o.BaseFeature
+        if not o.isValid() or base is None or base.Shape.isNull():
+            return
+        along = V(along).normalize()
+        n = m.Rotation.multVec(V(0, 0, 1))
+        plain = o.AddSubShape.copy()
+        on_sketch = lambda f: all(abs((v.Point - m.Base).dot(n)) < 1e-6 for v in f.Vertexes)
+        ends = [f for f in plain.Faces if isinstance(f.Surface, Part.Plane) and abs(f.Surface.Axis.dot(along)) > 1e-6 and not on_sketch(f)]
+        dropped = "the taper is dropped: FreeCAD ignores it up to a face"
+        if not ends:
+            st["status"], st["why"] = "approximate", dropped
+            return
+        k = V(ends[0].Surface.Axis).normalize()
+        k = k if k.dot(along) > 0 else k * -1
+        q = ends[0].Surface.Position
+        if any(abs(abs(V(f.Surface.Axis).normalize().dot(k)) - 1) > 1e-9 or abs((f.Surface.Position - q).dot(k)) > 1e-6 for f in ends):
+            st["status"], st["why"] = "approximate", dropped + " (it stops on more than one plane)"
+            return
+        old = o.Type
+        reach = max((v.Point - m.Base).dot(along) for v in plain.Vertexes)
+        size = 4 * (base.Shape.BoundBox.DiagonalLength + reach) + 10
+        o.Type = "Length"
+        o.Length = 2 * reach + size / 4
+        self.doc.recompute()
+        ok = o.isValid() and not o.AddSubShape.isNull()
+        if ok:
+            prism = o.AddSubShape.copy()
+            u = k.cross(V(1, 0, 0) if abs(k.x) < 0.9 else V(0, 1, 0)).normalize()
+            w = k.cross(u)
+            h = size / 2
+            square = Part.Face(Part.makePolygon([q + u * h + w * h, q - u * h + w * h, q - u * h - w * h, q + u * h - w * h, q + u * h + w * h]))
+            slab = square.extrude(k * -size)   # everything on the sketch's side of the plane
+            tool = prism.common(slab)
+            ok = tool.Volume > 1e-9
+        if ok:
+            depth = max((p - m.Base).dot(along) for e in tool.Edges for p in e.discretize(64)) + 1e-4
+            o.Length = depth
+            self.doc.recompute()
+            ok = o.isValid() and not o.AddSubShape.isNull()
+        if ok:
+            past = o.AddSubShape.cut(tool)
+            stray = past.common(base.Shape).Volume if cut else past.cut(base.Shape).Volume
+            want = base.Shape.cut(tool).Volume if cut else base.Shape.fuse(tool).Volume
+            ok = stray < 1e-6 * max(1.0, tool.Volume) and abs(o.Shape.Volume - want) < 1e-6 * max(1.0, want)
+        if ok:
+            st["status"], st["why"] = "approximate", "up to a face with a taper, as a fixed length of %.4f mm (FreeCAD ignores a taper up to a face); it runs on only into material already there" % depth
+            return
+        o.Type = old
+        self.doc.recompute()
+        st["status"], st["why"] = "approximate", dropped
 
     def fill_then_cut(self, f, outer, st):
         """A profile between a circle and a polygon touching it (a screw's socket) is slivers meeting at points, which FreeCAD
@@ -1749,6 +1815,14 @@ class Builder:
                         found = ["Edge%d" % (i + 1) for i, e in enumerate(shape.Edges) if edge_matches(ref, e, shape, 0.15)]
                         if found:
                             break
+                straight = bool(found) and all(is_line(shape.Edges[int(n[4:]) - 1]) for n in found)
+                for ref in alternatives if not found or straight else []:
+                    # Or FreeCAD has it split in pieces. Also tried where only a straight edge has the same ends:
+                    # where a round crosses a boss's root, a line can join the ends of a short curve.
+                    chain = curve_chain(ref, shape)
+                    if chain:
+                        found = chain
+                        break
             out.append(found)
         return out
 

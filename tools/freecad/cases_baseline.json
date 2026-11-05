@@ -279,6 +279,22 @@
   "surface_far": 0.0,
   "volume_off": 0.0
  },
+ "extrude-extent-to-next-taper": {
+  "bad": [
+   "Extrusion2: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 0.0
+ },
+ "extrude-extent-to-next-taper-slant": {
+  "bad": [
+   "Extrusion2: approximate"
+  ],
+  "kind": "match",
+  "surface_far": 0.0,
+  "volume_off": 5.736049812662265e-08
+ },
  "extrude-extent-to-plane": {
   "bad": [],
   "kind": "match",

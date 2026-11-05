@@ -1,0 +1,23 @@
+{
+  "file": "corpus\\generated\\extrude-extent\\to-next-taper-slant.ipt",
+  "parameters": [
+    {"name": "d0", "expression": "10 mm", "value": 1, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d1", "expression": "0 deg", "value": 0, "units": "deg", "kind": "kModelParameterObject"},
+    {"name": "d2", "expression": "8 mm", "value": 0.8, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d5", "expression": "25 mm", "value": 2.5, "units": "mm", "kind": "kModelParameterObject"},
+    {"name": "d7", "expression": "3 deg", "value": 0.05235987755982989, "units": "deg", "kind": "kModelParameterObject"}
+  ],
+  "features": [
+    {"name": "Extrusion1", "type": "kExtrudeFeatureObject", "operation": "kNewBodyOperation", "extent": "kDistanceExtent", "direction": "kPositiveExtentDirection", "distance": "10 mm", "taper": "0 deg", "profile": "+line (-10, -10) (-10, 10), line (-10, -10) (10, -10), line (-10, 10) (10, 10), line (10, -10) (10, 10)", "health": "kUpToDateHealth"},
+    {"name": "Chamfer1", "type": "kChamferFeatureObject", "chamferType": "kDistance", "distance": "8 mm", "distanceParam": "d2", "automaticEdgeChain": "true", "cornerSetback": "true", "preserveAllFeatures": "false", "health": "kUpToDateHealth"},
+    {"name": "Extrusion2", "type": "kExtrudeFeatureObject", "operation": "kJoinOperation", "extent": "kToNextExtent", "direction": "kNegativeExtentDirection", "taper": "3 deg", "profile": "+circle (0, 6) 2", "health": "kUpToDateHealth"}
+  ],
+  "sketches": [
+    {"name": "Sketch1", "entities": 8, "dimensions": 0, "constraints": 12},
+    {"name": "Sketch2", "entities": 2, "dimensions": 0, "constraints": 1}
+  ],
+  "imates": [
+    
+  ],
+  "picked": ["edge line (-10, 10, 10) (10, 10, 10)"]
+}
