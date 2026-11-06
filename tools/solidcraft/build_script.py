@@ -793,7 +793,14 @@ class Script:
     def fillet(self, f):
         for s in f["sets"]:
             if s["edges"]:
-                self.on_edges("solid.fillet", s["edges"], radius=s["param"], name=f["name"])
+                # Where SolidCraft refuses a round ("the blend is larger than the neighbouring faces", mostly where it
+                # takes a whole face, as a full round does), the radius eased by 0.0001 mm, as the FreeCAD build eases a
+                # full round; kept only if the part still matches Inventor's solid. (SolidCraft's fit: reduce was tried
+                # too: on 12 real parts it changed the shape everywhere it took and matched none.)
+                radius = s["param"] or "%.6f mm" % s["radius"]
+                eased = {"radius": "(%s) - 0.0001 mm" % radius, "name": f["name"]}
+                self.on_edges("solid.fillet", s["edges"], radius=radius, name=f["name"],
+                              **{ALTERNATIVES: [(eased, "radius eased by 0.0001 mm, as SolidCraft refused it as drawn")]})
 
     def mirror(self, f):
         what = self.originals(f)
@@ -1601,6 +1608,9 @@ def build(model, base, change=None, seconds=360, hollow=None, measure=None, soli
                 reason = " ".join(reason.split())[:300]
                 if not ok:
                     for params, why in c["params"].get(ALTERNATIVES, []):
+                        # With the edges just placed on SolidCraft's own body.
+                        if "edges" in c["params"] and "edges" not in params:
+                            params = dict(params, edges=c["params"]["edges"])
                         instead = dict(c, params=params)
                         if session.execute(instead, min(COMMAND_SECONDS, left + 30))[0]:
                             s.left.append({"feature": params.get("name"), "why": "%s (SolidCraft refused it as Inventor has it: %s)" % (why, reason[:120]), "approximate": True})
