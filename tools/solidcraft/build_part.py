@@ -86,7 +86,7 @@ def in_pieces(shape):
     return Part.Solid(Part.Shell(shape.Faces[0].generalFuse(planes)[1][0]))
 
 
-def without_degenerate_tori(step, shape, out):
+def without_degenerate_tori(step, shape, out, name):
     """SolidCraft drops a torus whose tube is wider than its ring (STEP's DEGENERATE_TOROIDAL_SURFACE, which Inventor
     uses for some rounds), leaving the body open. The same solid with those faces as splines, written to out; None if
     there are none or it can't be done. On real parts the result read back closed in SolidCraft, volumes within 0.25%."""
@@ -113,7 +113,14 @@ def without_degenerate_tori(step, shape, out):
             if not made.isValid() or abs(made.Volume - solid.Volume) > 1e-4 * abs(solid.Volume):
                 return None
             solids.append(made)
-        (solids[0] if len(solids) == 1 else Part.Compound(solids)).exportStep(out)
+        # Written as a named object, so SolidCraft's body takes the part's name as it does from Inventor's STEP.
+        import Import
+        doc = FreeCAD.newDocument("splined")
+        o = doc.addObject("Part::Feature", "Solid")
+        o.Label = name
+        o.Shape = solids[0] if len(solids) == 1 else Part.Compound(solids)
+        Import.export([o], out)
+        FreeCAD.closeDocument(doc.Name)
         return out
     except Exception:
         return None
@@ -239,7 +246,7 @@ def main():
         # quick_test.py: only whether the history rebuild matches.
         return result
     if result["outcome"] == "none" and inventor is not None:
-        splined = without_degenerate_tori(step, inventor, base + ".splined.step")
+        splined = without_degenerate_tori(step, inventor, base + ".splined.step", model["name"])
         refused = bring_in(splined or step, out, base + ".solid.step")
         if splined and not refused:
             result["notes"].append("rounds Inventor stores as a torus wider than its ring are brought in as splines, which SolidCraft needs; same shape")
