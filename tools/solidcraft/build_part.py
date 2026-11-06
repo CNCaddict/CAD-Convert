@@ -55,13 +55,17 @@ def compare(path, inventor):
     return r
 
 
-def closed(sc):
-    """SolidCraft's own opinion of the file: an open body has no volume there, whatever its STEP reads as elsewhere."""
+def closed(sc, solids=None):
+    """SolidCraft's own opinion of the file: an open body has no volume there, whatever its STEP reads as elsewhere.
+    With solids (how many Inventor's solid holds), open bodies beyond them are its surface bodies and don't count:
+    every one of the solids must be closed."""
     try:
         r = subprocess.run([build_script.CLI, "eval", sc], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=SOLIDCRAFT_SECONDS)
     except subprocess.TimeoutExpired:
         return None
     bodies = json.loads(r.stdout)["bodies"]
+    if solids:
+        return sum(1 for b in bodies if b["closed"]) == solids
     return bool(bodies) and all(b["closed"] for b in bodies)
 
 
@@ -80,6 +84,39 @@ def in_pieces(shape):
     size = shape.BoundBox.DiagonalLength * 2
     planes = [Part.Face(Part.Wire(Part.makeCircle(size, c, FreeCAD.Vector(*n)))) for n in ((1, 0, 0), (0, 1, 0), (0, 0, 1))]
     return Part.Solid(Part.Shell(shape.Faces[0].generalFuse(planes)[1][0]))
+
+
+def without_degenerate_tori(step, shape, out):
+    """SolidCraft drops a torus whose tube is wider than its ring (STEP's DEGENERATE_TOROIDAL_SURFACE, which Inventor
+    uses for some rounds), leaving the body open. The same solid with those faces as splines, written to out; None if
+    there are none or it can't be done. On real parts the result read back closed in SolidCraft, volumes within 0.25%."""
+    with open(step, encoding="utf-8", errors="replace") as fh:
+        if "DEGENERATE_TOROIDAL_SURFACE" not in fh.read():
+            return None
+    try:
+        bad = [f for f in shape.Faces if isinstance(f.Surface, Part.Toroid) and f.Surface.MinorRadius >= f.Surface.MajorRadius - 1e-9]
+        if not bad:
+            return None
+        solids = []
+        for solid in shape.Solids:
+            new = solid.replaceShape([(f, f.toNurbs().Faces[0]) for f in bad if any(f.isSame(g) for g in solid.Faces)])
+            new.sewShape(1e-4)
+            # All its skins, so a hollow inside stays hollow (a solid can hold a skin round an enclosed void).
+            if not new.Shells or not all(x.isClosed() for x in new.Shells):
+                return None
+            made = Part.makeSolid(new)
+            made = made.Solids[0] if made.Solids else None
+            if made is None:
+                return None
+            if made.Volume < 0:
+                made.reverse()
+            if not made.isValid() or abs(made.Volume - solid.Volume) > 1e-4 * abs(solid.Volume):
+                return None
+            solids.append(made)
+        (solids[0] if len(solids) == 1 else Part.Compound(solids)).exportStep(out)
+        return out
+    except Exception:
+        return None
 
 
 def hollow_of(model, inventor, base):
@@ -195,14 +232,17 @@ def main():
         result["notes"].append("sheet metal isn't carried to SolidCraft (%d features)" % len(sheet))
     if built and inventor is not None:
         result["rebuild"] = compare(base + ".step", inventor)
-        if same(result["rebuild"]) and closed(base + ".sc"):
+        if same(result["rebuild"]) and closed(base + ".sc", len(inventor.Solids)):
             result["outcome"] = "rebuilt"
             shutil.copyfile(base + ".sc", out)
     if os.environ.get("CADCONVERT_REBUILD_ONLY"):
         # quick_test.py: only whether the history rebuild matches.
         return result
     if result["outcome"] == "none" and inventor is not None:
-        refused = bring_in(step, out, base + ".solid.step")
+        splined = without_degenerate_tori(step, inventor, base + ".splined.step")
+        refused = bring_in(splined or step, out, base + ".solid.step")
+        if splined and not refused:
+            result["notes"].append("rounds Inventor stores as a torus wider than its ring are brought in as splines, which SolidCraft needs; same shape")
         if refused and len(inventor.Faces) == 1:
             cut = base + ".pieces.step"
             in_pieces(inventor).exportStep(cut)
@@ -211,7 +251,7 @@ def main():
                 result["notes"].append("its one round face is cut into pieces, which SolidCraft needs; same shape")
         if not refused:
             c = compare(base + ".solid.step", inventor)
-            c["closed"] = closed(out)
+            c["closed"] = closed(out, len(inventor.Solids))
             result["solid"] = c
             good = c["closed"] and c["valid"] and c["far"] == 0 and c["volume_off"] is not None and abs(c["volume_off"]) < SOLID_VOLUME
             result["outcome"] = "solid" if good else "flawed"
